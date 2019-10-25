@@ -47,7 +47,7 @@ class LibUtils():
         if inp_tb:
             self.make_cat(inp_tb)
         else:
-            inp_cats = glob.glob('*vot')
+            inp_cats = glob.glob('../control_samples/*vot')
             if len(inp_cats) == 0:
                 print('No samples found in current directory.')
             else:
