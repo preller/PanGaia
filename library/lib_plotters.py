@@ -113,7 +113,7 @@ class LibPlotters():
 
 		plt.subplot(121)
 		self.plot_2d(col_x = col_x, col_y = col_y, fontsize = fontsize, markersize = markersize, label=label,
-			color = color_2d, mew = 0, fig = False, show_av_err = True, **kargs)
+			color = color_2d, fig = False, show_av_err = True, **kargs)
 
 		plt.subplot(122)
 		hist_g = self.plot_hist(col_hist, fontsize=fontsize, xtick_bins = 7, color_hist = color_hist, fig = False, show_ylabel = '# Sources')
