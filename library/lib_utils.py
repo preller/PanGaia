@@ -38,7 +38,7 @@ class LibUtils():
             self.cat = inp_tb
 
 
-    def read_catalogue(self, inp_tb = None, verbose = True, save_sample = False, print_vrad = False, control_sample_dir = '../control_samples/'):
+    def read_catalogue(self, inp_tb = None, verbose = True, save_sample = False, print_vrad = False, control_sample_dir = '../samples_control/'):
         """
         Read Control Sample directly from a table.
         """
