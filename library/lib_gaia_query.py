@@ -126,7 +126,7 @@ class LibGaiaQuery():
         if add_input_cols != "":
             add_input_cols = "," + add_input_cols + " "
 
-        # 1.- Write ADQL query =================================
+        # 2.- Write ADQL query =================================
         query  = ("SELECT " + self.gaia_cols_p + ", " + self.wise_cols + ", " + self.tmass_cols + " " + 
                 add_input_cols + 
                 "FROM tap_upload.input_table as input_table "
@@ -139,7 +139,7 @@ class LibGaiaQuery():
                 f"AND ext_flag < 2 "
                 f"AND w3mpro_error IS NOT NULL "
                 f"AND w4mpro_error IS NOT NULL")
-        # 2.- Run ADQL query ===================================
+        # 3.- Run ADQL query ===================================
         print(f'RUNNING ADQL SYNCRHRONOUS QUERY ' + '=' * 57)
         job      = Gaia.launch_job(query= query, upload_resource = upload_resource[0], upload_table_name = upload_table_name, verbose = True)
         self.cat = job.get_results()
@@ -147,4 +147,50 @@ class LibGaiaQuery():
         if verbose:
             print('=' * 90)
             print(f'SAMPLE OUTPUT  N_els = {len(self.cat):3.0f}')
-            print('=' * 90)                     
+            print('=' * 90)
+
+
+    def run_gaia2mass_cross_match(self, upload_table = 'dummy.vot', verbose = True, add_input_cols = "", 
+        quality_par_SN  = '10', quality_par_vis = '7',quality_par_ruwe = '1.40'):
+        """
+        Run a crossmatch between Gaia, 2MASS
+        """
+        # 1.- Search input table =============================== 
+        upload_resource   = glob.glob(upload_table)
+        upload_table_name = "input_table"
+        if len(upload_resource) == 0:
+            raise Exception('Upload Table not found')
+
+        if add_input_cols != "":
+            add_input_cols = "," + add_input_cols + " "
+
+
+        # 2.- Write ADQL query ================================= 
+        query  = ("SELECT input_table.col2mass, " + self.gaia_cols + 
+                  ",sqrt(gaia.astrometric_chi2_al/(gaia.astrometric_n_good_obs_al-5)) as unit_weight_e, g_ruwe.ruwe as ruwe "
+                  "FROM tap_upload.input_table as input_table "
+                  "LEFT OUTER JOIN gaiadr2.tmass_best_neighbour AS xmatch ON input_table.col2mass = xmatch.original_ext_source_id "
+                  "LEFT OUTER JOIN gaiadr2.gaia_source          AS gaia   ON xmatch.source_id     = gaia.source_id "
+                  "LEFT OUTER JOIN gaiadr2.ruwe                 AS g_ruwe ON gaia.source_id       = g_ruwe.source_id "
+                  f"WHERE gaia.parallax/gaia.parallax_error >{quality_par_SN} AND gaia.visibility_periods_used >{quality_par_vis} AND g_ruwe.ruwe <{quality_par_ruwe}")
+
+
+        # 3.- Run ADQL query ===================================
+        warnings.simplefilter('ignore', category=AstropyWarning)
+        print(f'RUNNING ADQL SYNCRHRONOUS QUERY ' + '=' * 58)
+        job       = Gaia.launch_job(query= query, upload_resource = upload_resource[0], upload_table_name = upload_table_name, verbose = verbose)
+        self.cat  = job.get_results()
+
+        flag_psn, flag_vis, flag_ruwe  = '', '', ''
+        if quality_par_SN == '10':     flag_psn  = '(Default)'
+        if quality_par_vis == '7':     flag_vis  = '(Default)'
+        if quality_par_ruwe == '1.40': flag_ruwe = '(Default)'        
+
+        if verbose:
+            print('=' * 90)
+            print(f'Selection Criteria in Parallax S/N:             Parallax S/N > {quality_par_SN}   {flag_psn}')
+            print(f'Selection Criteria in Visibility Periods Used:  Vis          > {quality_par_vis}    {flag_vis}')
+            print(f'Selection Criteria in RUWE:                     RUWE         < {quality_par_ruwe} {flag_ruwe}')
+            print()            
+            print(f'SAMPLE OUTPUT  N_els = {len(self.cat):3.0f}')
+            print('=' * 63)                             

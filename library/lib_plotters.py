@@ -223,7 +223,7 @@ class LibPlotters():
 		plt.show()
 
 
-	def plot_3_hist(self, fig = True, inp_col_1 = 'parallax', inp_col_2 = 'pmra', inp_col_3 = 'pmdec', fig_nm = None, x1_bins = 0, x2_bins = 0, x3_bins = 0,
+	def plot_3_hist(self, fig = True, inp_col_1 = 'distance', inp_col_2 = 'pmra', inp_col_3 = 'pmdec', fig_nm = None, x1_bins = 0, x2_bins = 0, x3_bins = 0,
 	 vl_1 = None, vl_2 = None, vl_3 = None, x1lim = None, x2lim = None, x3lim = None, l_color = 'black', l_width = 3, fontsize = 36, ylabel_1 = None, 
 	 Gauss_fit = False):
 		"""

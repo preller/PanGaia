@@ -176,7 +176,10 @@ class LibCluster():
 
         self.min_samples = min_samples
         if verbose:
-            print(f'minSamples set to: {self.min_samples:15.0F}')
+            if self.min_samples == None:
+                print(f'minSamples set to: None')
+            else:
+                print(f'minSamples set to: {self.min_samples:15.0F}')
 
 
     def run_hdbscan(self, min_cluster_size = None, verbose = False, probability = None, min_samples = -1, plot_clusters = False, **kargs):

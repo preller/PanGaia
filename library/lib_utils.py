@@ -40,7 +40,7 @@ class LibUtils():
 
     def read_catalogue(self, inp_tb = None, verbose = True, save_sample = False, print_vrad = False, control_sample_dir = '../samples_control/'):
         """
-        Read Control Sample directly from a table.
+        Read Gaia Sample.
         """
         warnings.filterwarnings('ignore', category=AstropyWarning, append=True)
 
