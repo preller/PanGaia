@@ -6,6 +6,5 @@ matplotlib
 numpy
 pandas
 plotly
-pyesasky
 scikit-learn
 webcolors
