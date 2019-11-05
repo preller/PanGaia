@@ -38,7 +38,8 @@ class LibUtils():
             self.cat = inp_tb
 
 
-    def read_catalogue(self, inp_tb = None, verbose = True, save_sample = False, print_vrad = False, control_sample_dir = '../samples_control/'):
+    def read_catalogue(self, inp_tb = None, verbose = True, save_sample = False, print_vrad = False, 
+            sample_dir = '../samples_control/'):
         """
         Read Gaia Sample.
         """
@@ -47,12 +48,12 @@ class LibUtils():
         if inp_tb:
             self.make_cat(inp_tb)
         else:
-            inp_cats = glob.glob(control_sample_dir + '*vot')
+            inp_cats = glob.glob(sample_dir + '*vot')
             if len(inp_cats) == 0:
-                print('No samples found in current directory.')
+                print(f'No catalogues found in {sample_dir}.')
             else:
                 inp_cats = [inp_cat[inp_cat.rfind('/')+1:] for inp_cat in inp_cats]
-                print('Sample Catalogues in current directory: ' + '='*46)
+                print(f'Sample Catalogues in {sample_dir}: ' + '='*46)
                 print()
                 for inp_cat in inp_cats:
                     print('* ' + inp_cat)
@@ -60,7 +61,7 @@ class LibUtils():
 
                 while True:
                     samp_con   = input('Choose Control Sample: ')
-                    samp_con_i = glob.glob(control_sample_dir + samp_con)
+                    samp_con_i = glob.glob(sample_dir + samp_con)
                     if len(samp_con_i) == 1:
                         self.cat = Table.read(samp_con_i[0])
                         break

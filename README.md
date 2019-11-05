@@ -2,7 +2,18 @@
 This software makes use of public Python libraries to create a dedicated toolkit to access, explore, and apply a ML clustering 
 algorithm (HDBSCAN) to the Gaia DR2 catalogue.
 
-List of libraries:
+To ensure that all needed dependencies are installed run the following command in a terminal:
+
+pip install -r requirements.txt
+sh postBuild
+
+
+
+
+
+
+
+List of dedicated libraries:
 * Tbd
 * Tbd
 * Tbd
