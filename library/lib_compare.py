@@ -169,7 +169,7 @@ class LibCompare():
 
         for fig in figs_cls:
             _ = fig.plot_hist(inp_col = inp_col, color_hist = fig.color, fontsize = fontsize,
-                    fig = False, hist_blocks = hist_blocks)
+                    fig = False, hist_blocks = hist_blocks, show_ylabel = '# Objects')
 
         plt.show()
         if fig_nm:

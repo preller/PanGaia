@@ -24,6 +24,8 @@ class LibPlotters():
 	Initialize the class.
 	"""
 	def __init__(self):
+		self.units = {'pmra':r'[mas yr$^{-1}$]', 'pmdec':r'[mas yr$^{-1}$]', 'distance':'[pc]', 
+		    'ra':r'[$\degree$]', 'dec':r'[$\degree$]'}
 		pass
 
 
@@ -63,8 +65,8 @@ class LibPlotters():
 		if ylim:
 			plt.ylim(ylim)
 
-		plt.xlabel(col_x, fontsize = fontsize)
-		plt.ylabel(col_y, fontsize = fontsize)
+		plt.xlabel(col_x + ' ' + self.units[col_x], fontsize = fontsize)
+		plt.ylabel(col_y + ' ' + self.units[col_y], fontsize = fontsize)
 		plt.xticks(fontsize = fontsize)
 		plt.yticks(fontsize = fontsize)
 		plt.plot(self.cat[col_x], self.cat[col_y], 'o', markersize = markersize, mew = mew, markeredgecolor = 'black', color = color, alpha = alpha, label = label)
@@ -179,7 +181,7 @@ class LibPlotters():
 		if inp_col == 'pmra':     inp_col_label = r'$\mu_{\alpha}^{*}$ [mas yr$^{-1}$]'
 		if inp_col == 'pmdec':    inp_col_label = r'$\mu_{\delta}$ [mas yr$^{-1}$]'
 
-		plt.xlabel(inp_col_label, fontsize = fontsize)
+		plt.xlabel(inp_col_label + ' ' + self.units[inp_col_label], fontsize = fontsize)
 		plt.xticks(fontsize = fontsize)
 		plt.yticks(fontsize = fontsize)
 		plt.tick_params(axis='x', pad=pad)

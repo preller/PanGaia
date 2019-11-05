@@ -261,6 +261,6 @@ class LibInteractive():
 				{'x': self.cat_subsamp.X_gal, 'y': self.cat_subsamp.Y_gal, 'z': self.cat_subsamp.Z_gal, 'mode': 'markers'}
 				))
 		
-		fig.update_layout(scene = dict(xaxis_title = 'X_Gal', yaxis_title = 'Y_Gal', zaxis_title = 'Z_Gal'))
+		fig.update_layout(scene = dict(xaxis_title = 'X_Gal [pc]', yaxis_title = 'Y_Gal [pc]', zaxis_title = 'Z_Gal [pc]'))
 		fig = self.set_fig_show(fig, margins = margins, title = title)
 		self.fig_3D = fig

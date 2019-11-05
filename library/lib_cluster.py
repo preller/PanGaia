@@ -338,6 +338,7 @@ class LibCluster():
 
         # ================================================
         figure   = plt.figure(figsize=figsize)
+        plt.subplots_adjust(hspace=0, wspace=0.25)
         plt.subplot(131)
         figs_data.plot_2d(col_x='ra', col_y='dec', markersize = markersize, color = color_main, 
                           alpha = alpha_main, fontsize = fontsize, fig = False, label = 'Data')
@@ -359,7 +360,8 @@ class LibCluster():
          hist_blocks = hist_blocks, ylim = ylim_3)
 
         for fig in figs_cls:
-            _ = fig.plot_hist(inp_col = 'distance', color_hist = fig.color, alpha = 1, fontsize = fontsize, fig = False, hist_blocks = hist_blocks)
+            _ = fig.plot_hist(inp_col = 'distance', color_hist = fig.color, alpha = 1, fontsize = fontsize, fig = False, 
+                hist_blocks = hist_blocks, show_ylabel = '# Objects')
 
         plt.show()
         if fig_nm:
