@@ -1,10 +1,11 @@
 # PanGaia
-This software makes use of public Python libraries to create a dedicated toolkit to access, explore, and apply a ML clustering 
-algorithm (HDBSCAN) to the Gaia DR2 catalogue.
+This software makes use of public Python libraries to create a dedicated toolkit to access, explore,
+and apply a ML clustering algorithm (HDBSCAN) to the Gaia DR2 catalogue.
 
-To ensure that all needed dependencies are installed run the following command in a terminal:
+To ensure that all needed dependencies are installed run the following commands in a terminal:
 
 pip install -r requirements.txt
+
 sh postBuild
 
 
