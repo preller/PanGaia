@@ -15,10 +15,10 @@ of the Gaia DR2 catalogue. [Gaia DR2 catalogue](https://gea.esac.esa.int/archive
 This code has been succesfully tested with Python 3.7 with both the [Jupyter notebook](https://jupyter.org/) and 
 [Jupyter lab](https://jupyter.org/).
 
-To ensure that all needed dependencies are installed run the following commands in a terminal:
+To run locally this code clone this repository in your computer. Then execute the following commands:
 
+cd PanGaia
 pip install -r requirements.txt
-
 sh postBuild
 
 
