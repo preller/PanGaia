@@ -137,9 +137,8 @@ class LibCompare():
         plt.subplot(131)
         col_x, col_y = 'ra', 'dec'
         
-        figs_data.plot_2d(col_x = col_x, col_y = col_y, markersize = markersize, 
-            color = color_0, fontsize = fontsize, fig = False, label = 'Cluster 0',
-            xlim = xlim_1, ylim = ylim_1, mew = mew)
+        figs_data.plot_2d(col_x = col_x, col_y = col_y, markersize = markersize, color = color_0,
+                          fontsize = fontsize, fig = False, label = 'Cluster 0', xlim = xlim_1, ylim = ylim_1, mew = mew)
         plt.legend(fontsize = fontsize * 0.9)
 
         for fig in figs_cls:

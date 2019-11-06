@@ -283,6 +283,17 @@ class LibCluster():
 
 
 # Plotters ================================================================================================
+    def get_feature_lims(self, feature = 'pmra'):
+        """
+        Finds MAx/Min values for a given feature across the clusters found by HDSBCAN.
+        This is useful to define the xylim values of the plots.
+        """
+        xymax = np.ceil(np.max([np.max(inp[feature])  for inp in self.clusters]))
+        xymin = np.floor(np.min([np.min(inp[feature])  for inp in self.clusters]))
+
+        return [xymin, xymax]
+
+
     def plot_distributions(self, hist_blocks = 'knuth', color_hist  = 'lightgrey', edgecolor = 'black',
         fontsize = 16, file_name = None):
         """
@@ -317,7 +328,7 @@ class LibCluster():
 
 
     def plot_hdbscan_clusters(self, color_main = 'grey', alpha_main = 0.5, figsize = [30,9], markersize = 10, fontsize = 24,
-        xlim_1 = None, ylim_1 = None, ylim_3 = None, fig_nm = None,  hist_blocks = 'knuth'):
+        ylim_3 = None, fig_nm = None,  hist_blocks = 'knuth'):
         """
         Plot clusters found by HDBSCAN
         """
@@ -340,27 +351,31 @@ class LibCluster():
         figure   = plt.figure(figsize=figsize)
         plt.subplots_adjust(hspace=0, wspace=0.25)
         plt.subplot(131)
-        figs_data.plot_2d(col_x='ra', col_y='dec', markersize = markersize, color = color_main, 
+        col_x, col_y  = 'ra', 'dec'
+        figs_data.plot_2d(col_x = col_x, col_y = col_y, markersize = markersize, color = color_main, 
                           alpha = alpha_main, fontsize = fontsize, fig = False, label = 'Data')
         plt.legend(fontsize = fontsize * 0.9)
 
         for fig in figs_cls:
-            fig.oplot_2d(col_x='ra', col_y='dec', markersize = markersize, alpha = 1, label = next(llabels), color = fig.color)
+            fig.oplot_2d(col_x = col_x, col_y = col_y, markersize = markersize, alpha = 1, label = next(llabels), color = fig.color)
 
         # ================================================
         plt.subplot(132)
-        figs_data.plot_2d(col_x='pmra', col_y='pmdec', markersize = markersize, color = color_main,
-                          alpha = alpha_main, fontsize = fontsize, fig = False, xlim = xlim_1, ylim = ylim_1)
+        col_x, col_y  = 'pmra', 'pmdec'
+        figs_data.plot_2d(col_x = col_x, col_y = col_y, markersize = markersize, color = color_main,
+                          alpha = alpha_main, fontsize = fontsize, fig = False, xlim = self.get_feature_lims(col_x), 
+                          ylim = self.get_feature_lims(col_y))
         for fig in figs_cls:
-            fig.oplot_2d(col_x='pmra', col_y='pmdec', markersize = markersize, alpha = 1, color = fig.color)
+            fig.oplot_2d(col_x = col_x, col_y = col_y, markersize = markersize, alpha = 1, color = fig.color)
 
         # ================================================
         plt.subplot(133)
-        _ = figs_data.plot_hist(inp_col = 'distance', color_hist = color_main, alpha = alpha_main, fontsize = fontsize, fig = False,
+        inp_col = 'distance'
+        _ = figs_data.plot_hist(inp_col = inp_col, color_hist = color_main, alpha = alpha_main, fontsize = fontsize, fig = False,
          hist_blocks = hist_blocks, ylim = ylim_3)
 
         for fig in figs_cls:
-            _ = fig.plot_hist(inp_col = 'distance', color_hist = fig.color, alpha = 1, fontsize = fontsize, fig = False, 
+            _ = fig.plot_hist(inp_col = inp_col, color_hist = fig.color, alpha = 1, fontsize = fontsize, fig = False, 
                 hist_blocks = hist_blocks, show_ylabel = '# Objects')
 
         plt.show()
