@@ -1,3 +1,5 @@
+[![PyPI license](https://img.shields.io/pypi/l/ansicolortags.svg)](https://pypi.python.org/pypi/ansicolortags/)
+
 # PanGaia
 This software makes use of public Python libraries to create a dedicated toolkit to access, explore,
 and apply a ML clustering algorithm (HDBSCAN) to the Gaia DR2 catalogue.
