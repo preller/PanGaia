@@ -1,6 +1,4 @@
-![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
-
-[![Python 3.7](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-370/)
+![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg) [![Python 3.7](https://img.shields.io/badge/python-3.7-blue.svg)](https://www.python.org/downloads/release/python-370/)
 
 # PanGaia
 This software makes use of public Python libraries to create a dedicated toolkit to access, explore,
