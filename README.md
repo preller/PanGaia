@@ -1,9 +1,14 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.7](https://img.shields.io/badge/python-3.7-blue.svg)](https://www.python.org/downloads/release/python-370/)
 
-# PanGaia
-This software makes use of public Python libraries to create a dedicated toolkit to access, explore,
-and apply a ML clustering algorithm (HDBSCAN) to the Gaia DR2 catalogue.
+## Quickstart
+PanGaia is a dedicated toolkit made out of publicly available Python libraries. It has been developed to facilitate the
+
+1) access, 
+2) explation, and 
+3) analysis 
+
+of the Gaia DR2 catalogue.
 
 To ensure that all needed dependencies are installed run the following commands in a terminal:
 
