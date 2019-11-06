@@ -15,7 +15,7 @@ of the Gaia DR2 catalogue. [Gaia DR2 catalogue](https://gea.esac.esa.int/archive
 This code has been succesfully tested with Python 3.7 with both the [Jupyter notebook](https://jupyter.org/) and 
 [Jupyter lab](https://jupyter.org/).
 
-To run locally this code clone this repository in your computer. Then execute the following commands:
+To run locally this code open a terminarl and clone this repository in your computer. Then execute the following commands:
 
 ```python
 cd PanGaia
