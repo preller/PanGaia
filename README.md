@@ -1,4 +1,4 @@
-[![PyPI license](https://img.shields.io/pypi/l/ansicolortags.svg)](https://pypi.python.org/pypi/ansicolortags/)
+![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
 
 # PanGaia
 This software makes use of public Python libraries to create a dedicated toolkit to access, explore,
