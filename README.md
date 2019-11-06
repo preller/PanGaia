@@ -17,9 +17,11 @@ This code has been succesfully tested with Python 3.7 with both the [Jupyter not
 
 To run locally this code clone this repository in your computer. Then execute the following commands:
 
+```python
 cd PanGaia
 pip install -r requirements.txt
 sh postBuild
+```
 
 
 ## Reference article
