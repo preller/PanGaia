@@ -3,14 +3,17 @@
 ## Overview
 PanGaia is a dedicated Python toolkit made out of different packages, all of them publicly available on the web. It has been developed to facilitate the
 
-1) access, 
+1) accessibility, 
 2) exploration, and 
-3) clusterting analysis 
+3) clustering analysis 
 
 of the Gaia DR2 catalogue. [Gaia DR2 catalogue](https://gea.esac.esa.int/archive/). PanGaia run inside a [Jupyter notebook](https://jupyter.org/install) and it can be executed online via [Binder] (https://mybinder.org). To access to the online version simply click in the binder badge on top of this file.
 
 
 ## Installation
+
+This code has been succesfully tested with Python 3.7 with both the [Jupyter notebook](https://jupyter.org/) and 
+[Jupyter lab](https://jupyter.org/).
 
 To ensure that all needed dependencies are installed run the following commands in a terminal:
 
@@ -19,14 +22,5 @@ pip install -r requirements.txt
 sh postBuild
 
 
-
-##### ===================================
-List of dedicated libraries:
-* Tbd
-* Tbd
-* Tbd
-* Tbd
-* Tbd
-* Tbd
-
-
+## Reference article
+TbD.
