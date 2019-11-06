@@ -8,7 +8,7 @@ three main goals in mind: To facilitate the
 2) exploration, and 
 3) clustering analysis 
 
-of the Gaia DR2 catalogue. [Gaia DR2 catalogue](https://gea.esac.esa.int/archive/). PanGaia run inside a [Jupyter notebook](https://jupyter.org/install) and it can be executed online via [Binder] (https://mybinder.org). To access to the online version simply click in the binder badge on top of this file.
+of the Gaia DR2 catalogue. [Gaia DR2 catalogue](https://gea.esac.esa.int/archive/). PanGaia run inside a [Jupyter notebook](https://jupyter.org/install) and it can be executed online via [Binder] (https://mybinder.org). To access to the online version simply click in the binder badge on top of this README file.
 
 
 ## Installation
@@ -16,7 +16,7 @@ of the Gaia DR2 catalogue. [Gaia DR2 catalogue](https://gea.esac.esa.int/archive
 This code has been succesfully tested with Python 3.7 with both the [Jupyter notebook](https://jupyter.org/) and 
 [Jupyter lab](https://jupyter.org/).
 
-To run locally this code open a terminarl and clone this repository in your computer. Then execute the following commands:
+To run locally this code open a terminal and clone this repository in your computer. Then execute the following commands:
 
 ```python
 cd PanGaia
