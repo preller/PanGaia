@@ -5,7 +5,7 @@
 PanGaia is a dedicated toolkit made out of publicly available Python libraries. It has been developed to facilitate the
 
 1) access, 
-2) explation, and 
+2) exploration, and 
 3) analysis 
 
 of the Gaia DR2 catalogue.
