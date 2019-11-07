@@ -53,7 +53,7 @@ class LibPlotters():
 
 
 	def plot_2d(self, col_x = 'pmra', col_y = 'pmdec', fontsize = 18, fig = True, xlim = None, ylim = None, markersize = 2, 
-	color = 'grey', alpha = 0.75, label = None, grid = True, fig_nm = None, mew = 0, markeredgecolor = 'black', 
+	color = 'grey', alpha = 0.75, label = None, grid = True, fig_nm = None, mew = 1, markeredgecolor = 'black', 
 	figsize = [7,7], show_av_err = False):
 		"""
 		Shows 2D plot. The plot is automatically centred in the average XY values.

@@ -38,6 +38,17 @@ class LibUtils():
             self.cat = inp_tb
 
 
+    def display_N_rows(self, N_rows = 5, verbose = True):
+        """
+        Display first N rows of the dataset. 
+        """
+        if verbose:
+            print()
+            print(f'Showing {self.label} first {N_rows} rows:')
+        display(self.cat[0:N_rows])
+
+
+
     def read_catalogue(self, inp_tb = None, verbose = True, save_sample = False, print_vrad = False, 
             sample_dir = '../samples_control/'):
         """
