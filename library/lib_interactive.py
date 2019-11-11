@@ -34,8 +34,8 @@ class LibInteractive():
 	"""
 	Initialize the class.
 	"""
-	def __init__(self):
-		pass
+	def __init__(self, color_all = 'black'):
+		self.color_all  = color_all
 
 
 	def __repr__(self):
@@ -64,12 +64,12 @@ class LibInteractive():
 			self.control.cat = self.control.cat.to_pandas()
 		
 
-	def set_marker(self, color_def = 'blue', color_high = 'red', size = 8, border_width = 1, border_color = 'black', 
+	def set_marker(self, color_high = 'red', size = 8, border_width = 1, border_color = 'black', 
 		show_scale = False, hist_marker = False, opacity = 1.0):
 		"""
 		Define generic Marker properties. It uses detault plotLy muted blue color (https://stackoverflow.com/questions/40673490/how-to-get-plotly-js-default-colors-list)
 		"""
-		color_def   = color_nm_to_rgba(color = color_def, alpha = 0.5)
+		color_def   = color_nm_to_rgba(color = self.color_all, alpha = 0.5)
 		colorscale  = [[0, color_def], [0.5, color_def],[0.5, color_high], [1, color_high]]    # 2 colors for Default & Selected
 		color       = np.zeros(len(self.cat))
 		self.marker = {'cmax': 1.5, 'cmin': -0.5,'color': color,'colorscale': colorscale,'showscale': show_scale,
@@ -181,7 +181,7 @@ class LibInteractive():
 		self.fig_hist_dist = fig
 
 
-	def explore_and_select(self, color_high  = 'red', font_size = 16, height = 500, marker_size = 8, **kargs):
+	def explore_and_select(self, color_high  = 'cyan', font_size = 16, height = 500, marker_size = 8, **kargs):
 		"""
 		ALL-IN-ONE analysis window
 		"""
@@ -209,8 +209,9 @@ class LibInteractive():
 				scatt1.marker.color   = selected
 				scatt2.marker.color   = selected
 
-				#  Histograms require a bit of care:
-				self.set_marker(hist_marker = True, color_def = color_high)
+				#  Histograms require some care:
+				# self.set_marker(hist_marker = True, color_def = color_high)
+				self.set_marker(hist_marker = True)
 				marker          = self.marker
 				marker['color'] = color_high
 				self.fig_hist_dist.add_trace(go.Histogram(x = self.cat.distance[inds], marker = self.marker))
@@ -229,7 +230,9 @@ class LibInteractive():
 				f3.data = [f3.data[0], f3.data[1]]
 			else:
 				f3.data = [f3.data[0]]
-			delattr(self, "cat_subsamp")
+			
+			if hasattr(self, "cat_subsamp"):
+				delattr(self, "cat_subsamp")
 
 		# Create reset button ==============================		    
 		button = Button(description="clear")
