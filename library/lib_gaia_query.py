@@ -111,6 +111,7 @@ class LibGaiaQuery():
             print()            
             print(f'SAMPLE OUTPUT  N_els = {len(self.cat):3.0f}')
             print('=' * 90)
+            print()
 
 
     def run_phot_crossmatch(self, upload_table = 'dummy.vot', verbose = True, add_input_cols = ""):
