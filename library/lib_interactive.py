@@ -34,8 +34,9 @@ class LibInteractive():
 	"""
 	Initialize the class.
 	"""
-	def __init__(self, color_all = 'black'):
-		self.color_all  = color_all
+	def __init__(self, color_all = 'black', color_high = 'cyan'):
+		self.color_all   = color_all
+		self.color_high  = color_high
 
 
 	def __repr__(self):
@@ -64,13 +65,13 @@ class LibInteractive():
 			self.control.cat = self.control.cat.to_pandas()
 		
 
-	def set_marker(self, color_high = 'red', size = 8, border_width = 1, border_color = 'black', 
+	def set_marker(self, size = 8, border_width = 1, border_color = 'black', 
 		show_scale = False, hist_marker = False, opacity = 1.0):
 		"""
 		Define generic Marker properties. It uses detault plotLy muted blue color (https://stackoverflow.com/questions/40673490/how-to-get-plotly-js-default-colors-list)
 		"""
 		color_def   = color_nm_to_rgba(color = self.color_all, alpha = 0.5)
-		colorscale  = [[0, color_def], [0.5, color_def],[0.5, color_high], [1, color_high]]    # 2 colors for Default & Selected
+		colorscale  = [[0, color_def], [0.5, color_def],[0.5, self.color_high], [1, self.color_high]]    # 2 colors for Default & Selected
 		color       = np.zeros(len(self.cat))
 		self.marker = {'cmax': 1.5, 'cmin': -0.5,'color': color,'colorscale': colorscale,'showscale': show_scale,
 		               'line': dict(width = 1, color = 'black')} # Histogram layout is fixed
@@ -181,15 +182,15 @@ class LibInteractive():
 		self.fig_hist_dist = fig
 
 
-	def explore_and_select(self, color_high  = 'cyan', font_size = 16, height = 500, marker_size = 8, **kargs):
+	def explore_and_select(self, font_size = 16, height = 500, marker_size = 8, **kargs):
 		"""
 		ALL-IN-ONE analysis window
 		"""
 		margins = dict(t = 80)
 		width   = 500
-		self.show_sky_coords(width = width, height = height, size = marker_size, color_high = color_high, margins = margins, y_xaxis = -0.15, title = dict(text = 'Sky Position',          y = 0.9), **kargs)
-		self.show_properm(   width = width, height = height, size = marker_size, color_high = color_high, margins = margins, y_xaxis = -0.15, title = dict(text = 'Projected Velocity',    y = 0.9), **kargs)
-		self.show_hist_dist( width = width, height = height, size = marker_size, color_high = color_high, margins = margins, y_xaxis = -0.15, title = dict(text = 'Distance Distribution', y = 0.9), x_yaxis = -0.15, **kargs)
+		self.show_sky_coords(width = width, height = height, size = marker_size, margins = margins, y_xaxis = -0.15, title = dict(text = 'Sky Position',          y = 0.9), **kargs)
+		self.show_properm(   width = width, height = height, size = marker_size, margins = margins, y_xaxis = -0.15, title = dict(text = 'Projected Velocity',    y = 0.9), **kargs)
+		self.show_hist_dist( width = width, height = height, size = marker_size, margins = margins, y_xaxis = -0.15, title = dict(text = 'Distance Distribution', y = 0.9), x_yaxis = -0.15, **kargs)
 
 		f1 = self.fig_sky
 		f2 = self.fig_properm
@@ -213,7 +214,7 @@ class LibInteractive():
 				# self.set_marker(hist_marker = True, color_def = color_high)
 				self.set_marker(hist_marker = True)
 				marker          = self.marker
-				marker['color'] = color_high
+				marker['color'] = self.color_high
 				self.fig_hist_dist.add_trace(go.Histogram(x = self.cat.distance[inds], marker = self.marker))
 				self.fig_hist_dist.update_layout(barmode = 'overlay', showlegend=False)
 
@@ -260,8 +261,10 @@ class LibInteractive():
 				))
 
 		if hasattr(self, 'cat_subsamp'):
+			marker          = self.marker
+			marker['color'] = self.color_high
 			fig.add_trace(go.Scatter3d(
-				{'x': self.cat_subsamp.X_gal, 'y': self.cat_subsamp.Y_gal, 'z': self.cat_subsamp.Z_gal, 'mode': 'markers'}
+				{'x': self.cat_subsamp.X_gal, 'y': self.cat_subsamp.Y_gal, 'z': self.cat_subsamp.Z_gal, 'mode': 'markers', 'marker': marker}
 				))
 		
 		fig.update_layout(scene = dict(xaxis_title = 'X_Gal [pc]', yaxis_title = 'Y_Gal [pc]', zaxis_title = 'Z_Gal [pc]'))
