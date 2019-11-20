@@ -15,6 +15,7 @@ from astropy.coordinates import SkyCoord
 from astropy.table       import Table
 from pyesasky.catalogue  import Catalogue
 from pyesasky.cooFrame   import CooFrame
+from lib_utils           import LibUtils  as Utils
 
 # ========================================================================================
 # Gaia DR2 Plotters
@@ -31,11 +32,16 @@ class LibPlotters():
 
 	def __repr__(self):
 		"""Return developer-friendly string representation."""
-		return f'Class to plot processed Gaia DR2 data. Input object must be a Basic.cat catalogue'
+		return f'Class to plot processed Gaia DR2 data. Input object must be a LibUtils object'
 
 
-	def load_gaia_cat(self, inp_cat):
-		self.cat        = inp_cat
+	def load_gaia_obj(self, gaia_obj):
+		if isinstance(gaia_obj, Utils):
+			self.cat        = gaia_obj.cat
+			self.label      = gaia_obj.label
+			self.color      = gaia_obj.color
+		else:
+			raise AttributeError('Input Object must be an instance of LibUtils (in current directory)')
 
 
 	def plot_3D(self):
@@ -53,8 +59,7 @@ class LibPlotters():
 
 
 	def plot_2d(self, col_x = 'pmra', col_y = 'pmdec', fontsize = 18, fig = True, xlim = None, ylim = None, markersize = 2, 
-	color = 'grey', alpha = 0.75, label = None, grid = True, fig_nm = None, mew = 1, markeredgecolor = 'black', 
-	figsize = [7,7], show_av_err = False):
+	alpha = 0.75, label = True, grid = True, fig_nm = None, mew = 1, markeredgecolor = 'black', figsize = [7,7], show_av_err = False):
 		"""
 		Shows 2D plot. The plot is automatically centred in the average XY values.
 		"""
@@ -69,7 +74,8 @@ class LibPlotters():
 		plt.ylabel(col_y + ' ' + self.units[col_y], fontsize = fontsize)
 		plt.xticks(fontsize = fontsize)
 		plt.yticks(fontsize = fontsize)
-		plt.plot(self.cat[col_x], self.cat[col_y], 'o', markersize = markersize, mew = mew, markeredgecolor = 'black', color = color, alpha = alpha, label = label)
+		plt.plot(self.cat[col_x], self.cat[col_y], 'o', markersize = markersize, mew = mew, markeredgecolor = markeredgecolor, 
+			color = self.color, alpha = alpha, label = self.label)
 		ax       = plt.gca()
 		xlims    = ax.get_xlim()
 		ylims    = ax.get_ylim()
@@ -85,7 +91,7 @@ class LibPlotters():
 			y_e  = ylims[1] - ylims_rg/10
 			ax.errorbar(x_e, y_e, xerr=xerr, yerr=yerr, fmt='o', color = 'black', markersize = markersize*0.1, capthick=2, capsize = markersize*0.2)
 
-		if label: plt.legend(loc = 'upper right', fontsize = fontsize)
+		if label: plt.legend(loc = 'upper right', fontsize = fontsize * 0.8)
 		if grid: plt.grid()		
 		if fig: plt.show()
 		if fig and fig_nm:
@@ -100,25 +106,25 @@ class LibPlotters():
 		"""
 		OVERplot 2D plot
 		"""
-		plt.plot(self.cat[col_x], self.cat[col_y], 'o', markersize = markersize, mew = mew, markeredgecolor = 'black', color = color,
+		plt.plot(self.cat[col_x], self.cat[col_y], 'o', markersize = markersize, mew = mew, markeredgecolor = markeredgecolor, color = color,
 			alpha = alpha, label = label)
 		if label: 
-			plt.legend(loc = 'upper right', fontsize = fontsize)
+			plt.legend(loc = 'upper right', fontsize = fontsize * 0.8)
 
 
-	def plot_2d_and_hist(self, col_x = 'pmra', col_y = 'pmdec', col_hist = 'parallax', color_2d = 'grey', color_hist = 'lightgrey', 
-		fontsize = 26, markersize = 12, label='Gaia', fig_nm = None, figsize = [25,12], **kargs):
+	def plot_2d_and_hist(self, col_x = 'pmra', col_y = 'pmdec', col_hist = 'parallax', fontsize = 26, 
+		markersize = 12, fig_nm = None, figsize = [25,12], **kargs):
 		"""
 		Combine in 1 plot 2D distribution (left quadrant) & Histogram (right quadrant)
 		"""
 		fig = plt.figure(figsize=figsize)
 
 		plt.subplot(121)
-		self.plot_2d(col_x = col_x, col_y = col_y, fontsize = fontsize, markersize = markersize, label=label,
-			color = color_2d, fig = False, show_av_err = True, **kargs)
+		self.plot_2d(col_x = col_x, col_y = col_y, fontsize = fontsize, markersize = markersize,
+			fig = False, show_av_err = True, **kargs)
 
 		plt.subplot(122)
-		hist_g = self.plot_hist(col_hist, fontsize=fontsize, xtick_bins = 7, color_hist = color_hist, fig = False, show_ylabel = '# Sources')
+		hist_g = self.plot_hist(col_hist, fontsize=fontsize, xtick_bins = 7, fig = False, show_ylabel = '# Sources')
 		plt.show()
 
 		# Save figure in .PDF ========================
@@ -163,7 +169,7 @@ class LibPlotters():
 
 	
 	def plot_hist(self, inp_col = 'parallax', fontsize = 36, pad = 10, hist_blocks = 'knuth', fig = True, show_ylabel = None, xtick_bins = 5,
-	xlim = None, ylim = None, color_hist = 'lightgrey', edgecolor='black', figsize=[7,5], fig_nm = None, **kargs):
+	xlim = None, ylim = None, edgecolor='black', figsize=[7,5], fig_nm = None, **kargs):
 		"""
 		Plot Histogram
 		"""
@@ -188,7 +194,7 @@ class LibPlotters():
 
 		# Create Histogram ====
 		self.compute_hist(inp_col = inp_col, hist_blocks = hist_blocks)
-		plt.hist(self.hist_x, weights=self.hist_y, bins=len(self.hist_y), color = color_hist, edgecolor=edgecolor, **kargs)
+		plt.hist(self.hist_x, weights=self.hist_y, bins=len(self.hist_y), color = self.color, edgecolor=edgecolor, **kargs)
 
 		if xtick_bins != 0:
 			plt.locator_params(axis='x', nbins=xtick_bins)
@@ -268,18 +274,22 @@ class LibPlotters():
 		return {inp_col_1: hist_1, inp_col_2: hist_2, inp_col_3: hist_3}
 
 
-	def send_to_ESASky(self, pyesasky_widget, background = 'WISE', color = 'white', catalogueName = 'Catalogue', radius = 1.0):
+	def send_to_ESASky(self, pyesasky_widget, background = 'WISE', color = None, radius = 1.0):
 		"""
 		Overplot Sample On-Sky using the pyESASky Jupyter Widget
 		"""
 
 		# Set EsasKy BackGround Color =========
 		if background == 'WISE': back_dict = {'label':'AllWISE color', 'url': 'http://cdn.skies.esac.esa.int/AllWISEColor/'}
+		# Default: color =  color attribute of the gaia_obj. BUT it is useful to allow the user to set this parameter.
+		color_esa = self.color
+		if color: 
+			color_esa = color
 
 		pyesasky_widget.setHiPS(back_dict['label'], back_dict['url'])
 
 		# Create Catalogue ====================
-		catalogue = Catalogue(catalogueName = catalogueName, cooframe = CooFrame.FRAME_J2000, color = color, lineWidth = 1)
+		catalogue = Catalogue(catalogueName = self.label, cooframe = CooFrame.FRAME_J2000, color = color_esa, lineWidth = 1)
 		for i in range(len(self.cat)):
 		    catalogue.addSource(self.cat['source_id'][i], self.cat['ra'][i], self.cat['dec'][i], i + 1, [], [])
 		pyesasky_widget.overlayCatalogueWithDetails(catalogue)
@@ -289,17 +299,17 @@ class LibPlotters():
 		pyesasky_widget.setFoV(radius * 2.0 * 1.5) # Increase FoV by 50% as it looks nicer
 
 
-	def add_catalogue_to_ESASky(self, pyesasky_widget, new_catalogue, color = 'white', catalogueName = 'New_Catalogue', radius = None):
-		new_catalogue_inp = Catalogue(catalogueName = catalogueName, cooframe = CooFrame.FRAME_J2000, color = color, lineWidth = 1)
+	# def add_catalogue_to_ESASky(self, pyesasky_widget, new_catalogue, color = 'white', catalogueName = 'New_Catalogue', radius = None):
+	# 	new_catalogue_inp = Catalogue(catalogueName = catalogueName, cooframe = CooFrame.FRAME_J2000, color = color, lineWidth = 1)
 
-		if isinstance(new_catalogue, pd.DataFrame):
-			print('Exporting Pandas DF to .VOT')		
-			new_catalogue = Table.from_pandas(new_catalogue)
+	# 	if isinstance(new_catalogue, pd.DataFrame):
+	# 		print('Exporting Pandas DF to .VOT')		
+	# 		new_catalogue = Table.from_pandas(new_catalogue)
 		
-		for i in range(len(new_catalogue)):
-			new_catalogue_inp.addSource(new_catalogue['source_id'][i], new_catalogue['ra'][i], new_catalogue['dec'][i], i + 1, [], [])
+	# 	for i in range(len(new_catalogue)):
+	# 		new_catalogue_inp.addSource(new_catalogue['source_id'][i], new_catalogue['ra'][i], new_catalogue['dec'][i], i + 1, [], [])
 		
-		pyesasky_widget.overlayCatalogueWithDetails(new_catalogue_inp)
-		pyesasky_widget.setGoToRADec(self.cat['ra'].mean(), self.cat['dec'].mean())
-		if radius:
-			pyesasky_widget.setFoV(radius)
+	# 	pyesasky_widget.overlayCatalogueWithDetails(new_catalogue_inp)
+	# 	pyesasky_widget.setGoToRADec(self.cat['ra'].mean(), self.cat['dec'].mean())
+	# 	if radius:
+	# 		pyesasky_widget.setFoV(radius)

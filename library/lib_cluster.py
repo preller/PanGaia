@@ -8,7 +8,6 @@ import warnings
 import hdbscan
 import numpy as np
 import matplotlib.pyplot as plt
-from itertools import cycle
 from astropy.visualization    import hist
 from astropy.table            import Table
 from sklearn                  import preprocessing
@@ -34,6 +33,8 @@ class LibCluster():
     def __init__(self, verbose = False):
         warnings.filterwarnings('ignore')
         self.scalers = ['standard', 'minmax', 'robust']
+        self.colors  = plt.rcParams['axes.prop_cycle'].by_key()['color'] # Colors asigned to HDBSCAN Clusters
+
         if verbose:
             print('Implemented scalers in this module:')
             for inp in self.scalers:
@@ -44,40 +45,19 @@ class LibCluster():
         return f'Class to standarize data and apply HDBSCAN'
 
 
-    def read_data_obj(self, data_obj, scl_features = ['X_gal', 'Y_gal', 'Z_gal', 'pmdec', 'pmra'], scaler = None):
+    def load_gaia_obj(self, gaia_obj, scl_features = ['X_gal', 'Y_gal', 'Z_gal', 'pmdec', 'pmra'], scaler = None):
         """
         Load Gaia Utils object
         """
-        if isinstance(data_obj, Utils):
-            self.data_tb = data_obj.cat
-            self.label   = data_obj.label
+        if isinstance(gaia_obj, Utils):
+            self.gaia_obj= gaia_obj
+            self.data_tb = gaia_obj.cat
+            self.label   = gaia_obj.label
             self.scl_data(scl_features = scl_features, scaler = scaler)
             self.save_data_scl(file_name = f'{self.label}_scl_{self.scaler}.vot')
             self.plot_distributions(file_name = f'{self.label}_scl_{self.scaler}.pdf')
         else:
             raise Exception('Input object is not a LibUtils instance')
-
-
-    def read_data_tb(self, data_tb):
-        """
-        Load data (Astropy-Table object)
-        """
-        if isinstance(data_tb, str):
-            self.data_tb = Table.read(data_tb, format = 'votable')
-        if isinstance(data_tb, Table):
-            self.data_tb = data_tb
-
-
-    def read_data_scl(self, data_scl):
-        """
-        Read data (Astropy-Table object)
-        """
-        if isinstance(data_scl, str):
-            data_scl      = Table.read(data_scl, format = 'votable')
-            self.data_scl = data_scl.to_pandas()
-        if isinstance(data_scl, Table):
-            print('Exporting Astropy Table to Pandas')
-            self.data_scl = data_scl.to_pandas()
 
 
     def scl_data(self, scl_features = ['X_gal', 'Y_gal', 'Z_gal', 'pmdec', 'pmra'], 
@@ -228,12 +208,11 @@ class LibCluster():
             i_ordered     = np.argsort(np.array(lengths))  # Ordered indexes
             i_ordered     = i_ordered[::-1]                # Now from max to minimum size
             self.clusters = [clusters[inp] for inp in i_ordered]
-            self.clusters_get_info()
-            if verbose:
-                print(f'mCls = {self.mCls}; clusters = {self.clusters_n}; N_members = {self.clusters_l}')
         else:
             self.clusters = None
-            self.clusters_get_info()
+        self.clusters_get_info()
+        if verbose:
+            print(f'mCls = {self.mCls}; clusters = {self.clusters_n}; N_members = {self.clusters_l}')
 
 
     def clusters_get_info(self):
@@ -327,24 +306,25 @@ class LibCluster():
             print('=' * (len(text)))
 
 
-    def plot_hdbscan_clusters(self, color_main = 'grey', alpha_main = 0.5, figsize = [30,9], markersize = 10, fontsize = 24,
+    def plot_clusters(self, alpha_main = 0.5, figsize = [30,9], markersize = 10, fontsize = 24,
         ylim_3 = None, fig_nm = None,  hist_blocks = 'knuth'):
         """
         Plot clusters found by HDBSCAN
         """
         # Load data to Plotter Class ======================
         figs_data  = Plotters()
-        figs_data.load_gaia_cat(self.data_tb)
-        color_def  = plt.rcParams['axes.prop_cycle'].by_key()['color']
+        figs_data.load_gaia_obj(self.gaia_obj)
         figs_cls   = []
         llabels    = iter([f'Cluster {i}' for i in range(self.clusters_n)])
-        colors     = cycle(color_def) # Default MatPlotlub colors
+        colors     = iter(self.colors)
 
         if self.clusters:
             for inp in self.clusters:
+                cl_inp = Utils(color = next(colors), label = next(llabels))
+                cl_inp.read_catalogue(inp, verbose = False)
+
                 fclass       = Plotters()
-                fclass.color = next(colors)
-                fclass.load_gaia_cat(inp)
+                fclass.load_gaia_obj(cl_inp)
                 figs_cls.append(fclass)
 
         # ================================================
@@ -352,30 +332,30 @@ class LibCluster():
         plt.subplots_adjust(hspace=0, wspace=0.25)
         plt.subplot(131)
         col_x, col_y  = 'ra', 'dec'
-        figs_data.plot_2d(col_x = col_x, col_y = col_y, markersize = markersize, color = color_main, 
-                          alpha = alpha_main, fontsize = fontsize, fig = False, label = 'Data')
-        plt.legend(fontsize = fontsize * 0.9)
+        figs_data.plot_2d(col_x = col_x, col_y = col_y, markersize = markersize, 
+                          alpha = alpha_main, fontsize = fontsize, fig = False)
 
         for fig in figs_cls:
-            fig.oplot_2d(col_x = col_x, col_y = col_y, markersize = markersize, alpha = 1, label = next(llabels), color = fig.color)
+            fig.plot_2d(col_x = col_x, col_y = col_y, markersize = markersize, alpha = 1, fig = False, fontsize = fontsize)
+
 
         # ================================================
         plt.subplot(132)
         col_x, col_y  = 'pmra', 'pmdec'
-        figs_data.plot_2d(col_x = col_x, col_y = col_y, markersize = markersize, color = color_main,
+        figs_data.plot_2d(col_x = col_x, col_y = col_y, markersize = markersize,
                           alpha = alpha_main, fontsize = fontsize, fig = False, xlim = self.get_feature_lims(col_x), 
-                          ylim = self.get_feature_lims(col_y))
+                          ylim = self.get_feature_lims(col_y), label = None)
         for fig in figs_cls:
-            fig.oplot_2d(col_x = col_x, col_y = col_y, markersize = markersize, alpha = 1, color = fig.color)
+            fig.plot_2d(col_x = col_x, col_y = col_y, markersize = markersize, alpha = 1, fig = False, fontsize = fontsize, label = None)
 
         # ================================================
         plt.subplot(133)
         inp_col = 'distance'
-        _ = figs_data.plot_hist(inp_col = inp_col, color_hist = color_main, alpha = alpha_main, fontsize = fontsize, fig = False,
+        _ = figs_data.plot_hist(inp_col = inp_col, alpha = alpha_main, fontsize = fontsize, fig = False,
          hist_blocks = hist_blocks, ylim = ylim_3)
 
         for fig in figs_cls:
-            _ = fig.plot_hist(inp_col = inp_col, color_hist = fig.color, alpha = 1, fontsize = fontsize, fig = False, 
+            _ = fig.plot_hist(inp_col = inp_col, alpha = 1, fontsize = fontsize, fig = False, 
                 hist_blocks = hist_blocks, show_ylabel = '# Objects')
 
         plt.show()
@@ -386,18 +366,21 @@ class LibCluster():
             print('=' * (len(fig_nm) + 14))
 
 
-    def esasky_hdbscan_clusters(self, pyesasky_widget, **kargs):
+    def send_to_ESASky(self, pyesasky_widget, **kargs):
         """
         Show HDBSCAN clusters in ESASky
         """
         # Load data to Plotter Class ======================
+        llabels    = iter([f'Cluster {i}' for i in range(self.clusters_n)])
+        colors     = iter(self.colors)
         figs_data  = Plotters()
         i          = -1
-        color_def  = iter(plt.rcParams['axes.prop_cycle'].by_key()['color'])
         for cluster in self.clusters:
             i = i + 1
-            figs_data.load_gaia_cat(cluster)
-            figs_data.send_to_ESASky(pyesasky_widget, background='WISE', color=next(color_def), catalogueName = f'Cluster {i}', **kargs)
+            cl_inp = Utils(color = next(colors), label = next(llabels))
+            cl_inp.read_catalogue(cluster, verbose = False)
+            figs_data.load_gaia_obj(cl_inp)
+            figs_data.send_to_ESASky(pyesasky_widget, background='WISE', **kargs)
 
 
     def plot_multi_hdbscan_stats(self, figsize = [15,7], fontsize = 18, fig_nm = None):
