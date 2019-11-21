@@ -63,7 +63,7 @@ class LibCluster():
     def scl_data(self, scl_features = ['X_gal', 'Y_gal', 'Z_gal', 'pmdec', 'pmra'], 
             scaler = None, verbose = False):
         """
-        Scale data (necessary step before applying any clutering algorithm)
+        Scale data (necessary step before applying any clustering algorithm)
         """
         if scaler == None:
             scaler = input('Introduce scaler option (standard (default), robust, minmax): ')
@@ -157,7 +157,7 @@ class LibCluster():
         self.min_samples = min_samples
         if verbose:
             if self.min_samples == None:
-                print(f'minSamples set to: None')
+                print(f'minSamples set to: {"None":>16s}')
             else:
                 print(f'minSamples set to: {self.min_samples:15.0F}')
 
@@ -229,7 +229,7 @@ class LibCluster():
             self.clusters_r = 0
 
 
-    def run_multi_hdbscan(self, mCls_min = 10, mCls_max = 70, mCls_step = 1, verbose = True, show_plot = True, 
+    def run_multi_hdbscan(self, mCls_min = 10, mCls_max = 70, mCls_step = 1, verbose = True, show_plot = False, 
             probability = None, min_samples = -1, **kargs):
         """
         Apply HDBSCAN algorithm to a range of mCls values defined by the user.
@@ -244,6 +244,7 @@ class LibCluster():
 
         self.set_probability_thresold(probability = probability, verbose = True)
         self.set_min_samples(min_samples = min_samples,          verbose = True)
+        print()
 
 
         for mCls in range(mCls_min, mCls_max, mCls_step):
@@ -380,10 +381,10 @@ class LibCluster():
             cl_inp = Utils(color = next(colors), label = next(llabels))
             cl_inp.read_catalogue(cluster, verbose = False)
             figs_data.load_gaia_obj(cl_inp)
-            figs_data.send_to_ESASky(pyesasky_widget, background='WISE', **kargs)
+            figs_data.send_to_ESASky(pyesasky_widget, background = 'WISE', **kargs)
 
 
-    def plot_multi_hdbscan_stats(self, figsize = [15,7], fontsize = 18, fig_nm = None):
+    def plot_multi_hdbscan_stats(self, figsize = [15,7], fontsize = 18, fig_nm = 'default'):
         """
         Plot run_multi_hdbscan results using a bar-chart diagram.
         """
@@ -423,11 +424,14 @@ class LibCluster():
         plt.ylim(ylim)
         plt.show()
 
-        if fig_nm:
-            if fig_nm == 'default':
-                fig_nm = f'{self.label}_hdb_minsamp_{self.min_samples}_prob_{self.probability}.pdf'
 
-            fig.savefig(fig_nm, bbox_inches = 'tight', overwrite = True)
-            print('=' * (len(fig_nm) + 14))
-            print(f'PDF saved as: {fig_nm}')
-            print('=' * (len(fig_nm) + 14))
+        # Export plot to .PDF and save it
+        if fig_nm == 'default':
+            fig_nm = f'{self.label}_hdb_minsamp_{self.min_samples}_prob_{self.probability}.pdf'
+        else:
+        	fig_nm = fig_nm
+
+        fig.savefig(fig_nm, bbox_inches = 'tight', overwrite = True)
+        print('=' * (len(fig_nm) + 14))
+        print(f'PDF saved as: {fig_nm}')
+        print('=' * (len(fig_nm) + 14))

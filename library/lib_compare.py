@@ -26,7 +26,7 @@ class LibCompare():
         return f'Class to create compare HDBSCAN output VS control sample'
 
 
-    def read_control(self, control_obj, verbose = True, mew = 1.5):
+    def read_control(self, control_obj, verbose = True, mew = 2):
         """
         Read Control Sample from control object
         """
