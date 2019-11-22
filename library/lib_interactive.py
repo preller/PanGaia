@@ -248,7 +248,7 @@ class LibInteractive():
         self.dashboard    = VBox([HBox([f1, f2,f3]), button])
 
 
-    def show_3D_space(self, font_size = 16, width = 1500, height = 700, y_xaxis = -0.15, x_yaxis = -0.2, title = None,
+    def show_3D_space(self, font_size = 16, width = 1200, height = 800, y_xaxis = -0.15, x_yaxis = -0.2, title = None,
         margins = None, **kwargs):
         """
         Interactive Proper-Motions plot

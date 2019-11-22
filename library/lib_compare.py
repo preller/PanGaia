@@ -26,6 +26,16 @@ class LibCompare():
         return f'Class to create compare HDBSCAN output VS control sample'
 
 
+    def save_fig(self, figure, fig_nm = 'dummy.pdf', comment_len = 14, text = 'PDF saved as: '):
+        """
+        Save pdf & print info on screen - Copy of lib_cluster.save_fig()
+        """
+        figure.savefig(fig_nm, bbox_inches = 'tight', overwrite = True)
+        print('=' * (len(fig_nm) + comment_len))
+        print(f'{text}{fig_nm}')
+        print('=' * (len(fig_nm) + comment_len))
+
+
     def read_control(self, control_obj, verbose = True, mew = 2):
         """
         Read Control Sample from control object
@@ -45,6 +55,7 @@ class LibCompare():
             self.clusters    = dbscan_obj.clusters
             self.label       = dbscan_obj.label
             self.min_samples = dbscan_obj.min_samples
+            self.mCls        = dbscan_obj.mCls
             self.probability = dbscan_obj.probability
             if verbose:
                 i = 0
@@ -105,75 +116,72 @@ class LibCompare():
             print('=' * len(text))
 
 
-    def plot_clusters_comp(self, figsize = [30,9], markersize = 10, fontsize = 24, 
-            xlim_1 = None, ylim_1 = None, xlim_2 = None, ylim_2 = None, ylim_3 = None,
-            fig_nm = None,  hist_blocks = 'knuth', mew = 1):
+    def plot_clusters_comp(self, alpha_main = 1.0, figsize = [30,9], markersize = 10, fontsize = 24, 
+           ylim_3 = None, save_fig = True,  hist_blocks = 'knuth', mew = 1):
         """
         Plot clusters found by HDBSCAN - similar to library_cluster.plot_clusters()
         """
-        # Load data to Plotter Class ======================
-        llabels    = iter([f'Cluster {i+1}' for i in range(len(self.clusters))])
-        figs_data  = Plotters()
-        figs_data.load_gaia_obj(self.clusters[0]) # Load first the largest cluster (first on the list)
-        # color_def  = plt.rcParams['axes.prop_cycle'].by_key()['color']
-        figs_cls   = []
-        color_0    = color_def[0]
-        colors     = cycle(color_def[1:]) # Default MatPlotlub colors
-        control_sf = 0.6
-        
-        # Load Control data =====
-        fig_con    = Plotters()
-        fig_con.load_gaia_cat(self.control.cat)
+        # Create labels ===================================
+        self.labels = [f'Cluster {i}' for i in range(len(self.clusters))]
 
-        for inp in self.clusters[1:]:
-            fclass       = Plotters()
-            fclass.color = next(colors)
-            fclass.load_gaia_cat(inp)
-            figs_cls.append(fclass)
 
-        # ================================================
+         # Clusters >> Utils objects =======
+        cl_list = []
+        for i in range(len(self.clusters)):
+            cl_inp = Utils(color = self.colors[i], label = self.labels[i])
+            cl_inp.read_catalogue(self.clusters[i], verbose = False)
+            cl_list.append(cl_inp)
+
+         # Load first cluster (largest) ====
+        figs_cl0  = Plotters()
+        figs_cl0.load_gaia_obj(cl_list[0])
+
+         # Load the rest of the clusters ===
+        figs_cls  = []
+        for i in range(1,len(self.clusters)):
+            figs   = Plotters()
+            figs.load_gaia_obj(cl_list[i])
+            figs_cls.append(figs)
+
+         # Load control sample =============
+        figs_ctl  = Plotters()
+        figs_ctl.load_gaia_obj(self.control)
+
+
         figure   = plt.figure(figsize=figsize)
+        plt.subplots_adjust(hspace=0, wspace=0.25)
+        # ================================================
         plt.subplot(131)
-        col_x, col_y = 'ra', 'dec'
-        
-        figs_data.plot_2d(col_x = col_x, col_y = col_y, markersize = markersize, color = color_0,
-                          fontsize = fontsize, fig = False, label = 'Cluster 0', xlim = xlim_1, ylim = ylim_1, mew = mew)
-        plt.legend(fontsize = fontsize * 0.9)
+        figs_cl0.plot_2d(col_x = 'ra', col_y = 'dec', markersize = markersize, 
+                  alpha = alpha_main, fontsize = fontsize, fig = False)
 
         for fig in figs_cls:
-            fig.oplot_2d(col_x = col_x, col_y = col_y, markersize = markersize,
-                label = next(llabels), color = fig.color, mew = mew)
+            fig.oplot_2d(col_x = 'ra', col_y = 'dec', markersize = markersize, alpha = 1, fontsize = fontsize, legend = True, mew = 1)
+        figs_ctl.oplot_2d(col_x = 'ra', col_y = 'dec', markersize = markersize * 0.6, alpha = 1, fontsize = fontsize, legend = True, mew = 1)
 
-        fig_con.oplot_2d(col_x = col_x, col_y = col_y, markersize = markersize*control_sf,
-            label = self.control.label, color = self.control.color, mew = self.control.mew)
         # ================================================
         plt.subplot(132)
-        col_x, col_y = 'pmra', 'pmdec'
-        figs_data.plot_2d(col_x = col_x, col_y = col_y, markersize = markersize, color = color_0,
-                          fontsize = fontsize, fig = False, xlim = xlim_2, ylim = ylim_2, mew = mew)
-        for fig in figs_cls:
-            fig.oplot_2d(col_x = col_x, col_y = col_y, markersize = markersize, color = fig.color, mew = mew)
+        legend = False
+        figs_cl0.plot_2d(col_x = 'pmra', col_y = 'pmdec', markersize = markersize, 
+                  alpha = alpha_main, fontsize = fontsize, fig = False, legend = legend)
 
-        fig_con.oplot_2d(col_x = col_x, col_y = col_y, markersize = markersize*control_sf,
-            color = self.control.color, mew = self.control.mew)
+        for fig in figs_cls:
+            fig.oplot_2d(col_x = 'pmra', col_y = 'pmdec', markersize = markersize, alpha = 1, fontsize = fontsize, legend = legend, mew = 1)
+        figs_ctl.oplot_2d(col_x = 'pmra', col_y = 'pmdec', markersize = markersize * 0.6, alpha = 1, fontsize = fontsize, legend = legend, mew = 1)
+
         # ================================================
         plt.subplot(133)
-        inp_col = 'distance'
-        _ = fig_con.plot_hist(inp_col = inp_col, color_hist = self.control.color, fontsize = fontsize,
-                fig = False, hist_blocks = hist_blocks)
-
-        _ = figs_data.plot_hist(inp_col = inp_col, color_hist = color_0, fontsize = fontsize,
-                fig = False, hist_blocks = hist_blocks, ylim = ylim_3)
+        _ = figs_cl0.plot_hist(inp_col = 'distance', alpha = alpha_main, fontsize = fontsize, fig = False,
+         hist_blocks = hist_blocks, ylim = ylim_3)
 
         for fig in figs_cls:
-            _ = fig.plot_hist(inp_col = inp_col, color_hist = fig.color, fontsize = fontsize,
-                    fig = False, hist_blocks = hist_blocks, show_ylabel = '# Objects')
+            _ = fig.plot_hist(inp_col = 'distance', alpha = 1, fontsize = fontsize, fig = False, 
+                hist_blocks = hist_blocks, show_ylabel = '# Objects')
+        _ = figs_ctl.plot_hist(inp_col = 'distance', alpha = 1, fontsize = fontsize, fig = False, 
+            hist_blocks = hist_blocks, fill = False, hatch='//', linewidth=2)
+
 
         plt.show()
-        if fig_nm:
-            if fig_nm == 'default':
-                fig_nm = f'{self.label}_hdb_minsamp_{self.min_samples}_prob_{self.probability}_.pdf'
-            figure.savefig(fig_nm, bbox_inches = 'tight', overwrite = True)
-            print('=' * (len(fig_nm) + 14))
-            print(f'PDF saved as: {fig_nm}')
-            print('=' * (len(fig_nm) + 14))
+        if save_fig:
+            fig_nm = f'{self.label}_hdb_minsamp_{self.min_samples}_prob_{self.probability}_mCls_{self.mCls}_comp.pdf'
+            self.save_fig(figure, fig_nm = fig_nm)
