@@ -32,36 +32,62 @@ class LibCluster():
     """
     def __init__(self, verbose = False):
         warnings.filterwarnings('ignore')
-        self.scalers = ['standard', 'minmax', 'robust']
-        self.colors  = plt.rcParams['axes.prop_cycle'].by_key()['color'] # Colors asigned to HDBSCAN Clusters
-
-        if verbose:
-            print('Implemented scalers in this module:')
-            for inp in self.scalers:
-                print(inp)
+        self.colors  = plt.rcParams['axes.prop_cycle'].by_key()['color'] # HDBSCAN Cluster colors
 
 
     def __repr__(self):
         return f'Class to standarize data and apply HDBSCAN'
 
 
-    def load_gaia_obj(self, gaia_obj, scl_features = ['X_gal', 'Y_gal', 'Z_gal', 'pmdec', 'pmra'], scaler = None):
+    def save_fig(self, figure, fig_nm = 'dummy.pdf', comment_len = 14, text = 'PDF saved as: '):
         """
-        Load Gaia Utils object
+        Save pdf & print info on screen.
+        """
+        figure.savefig(fig_nm, bbox_inches = 'tight', overwrite = True)
+        print('=' * (len(fig_nm) + comment_len))
+        print(f'{text}{fig_nm}')
+        print('=' * (len(fig_nm) + comment_len))
+
+
+    def save_tb(self, data_table, tb_nm = 'dummy.vot', text = '.vot table saved as: '):
+        """
+        Save .vot & print info on screen.
+        """
+        text   = f'{text}{tb_nm}'
+        print('=' * (len(text)))
+        print(text)
+        print('=' * (len(text)))
+        data_table.write(tb_nm, overwrite = True, format = 'votable')
+
+
+    def save_clusters(self):
+        """
+        Save HDBSCAN clusters (final step)
+        """
+        i         = -1
+        root_name = f'{self.label}_hdb_minsamp_{self.min_samples}_prob_{self.probability}_mCls_{self.mCls}'
+        for cluster in self.clusters:
+            i         = i + 1
+            self.save_tb(cluster, tb_nm = root_name + f'_cl_{i}.vot', text = 'HDBSCAN Cluster data saved as: ')
+
+
+    def load_gaia_obj(self, gaia_obj, scl_features = ['X_gal', 'Y_gal', 'Z_gal', 'pmdec', 'pmra'],
+        scaler = None, save_scl = True):
+        """
+        Load Gaia Utils object.
         """
         if isinstance(gaia_obj, Utils):
             self.gaia_obj= gaia_obj
             self.data_tb = gaia_obj.cat
             self.label   = gaia_obj.label
-            self.scl_data(scl_features = scl_features, scaler = scaler)
-            self.save_data_scl(file_name = f'{self.label}_scl_{self.scaler}.vot')
-            self.plot_distributions(file_name = f'{self.label}_scl_{self.scaler}.pdf')
+            self.scl_data(scl_features = scl_features, scaler = scaler, save_scl = save_scl)
+            self.plot_distributions()
         else:
             raise Exception('Input object is not a LibUtils instance')
 
 
     def scl_data(self, scl_features = ['X_gal', 'Y_gal', 'Z_gal', 'pmdec', 'pmra'], 
-            scaler = None, verbose = False):
+            scaler = None, verbose = False, save_scl = True):
         """
         Scale data (necessary step before applying any clustering algorithm)
         """
@@ -75,9 +101,12 @@ class LibCluster():
         self.features = scl_features 
         data_tb_pd    = self.data_tb[self.features].to_pandas()
 
-        if self.scaler == 'standard': self.data_scl = preprocessing.StandardScaler().fit_transform(data_tb_pd)
-        if self.scaler == 'minmax':   self.data_scl = preprocessing.MinMaxScaler().fit_transform(data_tb_pd)
-        if self.scaler == 'robust':   self.data_scl = preprocessing.RobustScaler(quantile_range=(25, 75)).fit_transform(data_tb_pd)
+        if self.scaler == 'standard':
+            self.data_scl = preprocessing.StandardScaler().fit_transform(data_tb_pd)
+        if self.scaler == 'minmax':
+            self.data_scl = preprocessing.MinMaxScaler().fit_transform(data_tb_pd)
+        if self.scaler == 'robust':
+            self.data_scl = preprocessing.RobustScaler(quantile_range=(25, 75)).fit_transform(data_tb_pd)
 
         if verbose:
             print('Printing Mean & Std Deviation of scaled data')
@@ -86,32 +115,8 @@ class LibCluster():
             feats    = iter(self.features)
             for scl_mean_i in scl_mean:
                 print(f'{next(feats):5s}: {scl_mean_i:>10.2f}, {next(scl_std):5.2f}')
-
-
-    def save_data_scl(self, file_name = 'data_scaled.vot'):
-        """
-        Save scaled data as Astropy table
-        """
-        text   = f'Scaled data saved as: {file_name}' 
-        print('=' * (len(text)))
-        print(text)
-        print('=' * (len(text)))
-        data_tb = Table(self.data_scl)
-        data_tb.write(file_name, overwrite = True, format = 'votable')
-
-
-    def save_cluster(self):
-        """
-        Save HDBSCAN selected cluster
-        """
-        index     = read_float_input('Select cluster index to save: ')
-        index     = np.int(index)
-        file_name = f'{self.label}_minsamp_{self.min_samples}_mCls_{self.mCls}_cl_{index}.vot'
-        text   = f'HDBSCAN Cluster data saved as: {file_name}' 
-        print('=' * (len(text)))
-        print(text)
-        print('=' * (len(text)))
-        self.clusters[index].write(file_name, overwrite = True, format = 'votable')
+        if save_scl:
+            self.save_tb(Table(self.data_scl), tb_nm = f'{self.label}_scl_{self.scaler}.vot')
 
 
     def set_probability_thresold(self, probability = None, verbose = True):
@@ -246,7 +251,6 @@ class LibCluster():
         self.set_min_samples(min_samples = min_samples,          verbose = True)
         print()
 
-
         for mCls in range(mCls_min, mCls_max, mCls_step):
             self.run_hdbscan(min_cluster_size = mCls, verbose = verbose, probability = self.probability,
                 min_samples = self.min_samples, **kargs)
@@ -259,138 +263,100 @@ class LibCluster():
         self.clusters_multi   = clusters_multi
         self.clusters_multi_r = clusters_multi_r
         if show_plot:
-            self.plot_multi_hdbscan_stats(**kargs)
+            self.plot_barchart(**kargs)
 
 
 # Plotters ================================================================================================
-    def get_feature_lims(self, feature = 'pmra'):
-        """
-        Finds MAx/Min values for a given feature across the clusters found by HDSBCAN.
-        This is useful to define the xylim values of the plots.
-        """
-        xymax = np.ceil(np.max([np.max(inp[feature])  for inp in self.clusters]))
-        xymin = np.floor(np.min([np.min(inp[feature])  for inp in self.clusters]))
-
-        return [xymin, xymax]
-
-
     def plot_distributions(self, hist_blocks = 'knuth', color_hist  = 'lightgrey', edgecolor = 'black',
-        fontsize = 16, file_name = None):
+        fontsize = 16, save_fig = True):
         """
         Plot feature distributions (i.e., where the clustering is applied).
         Only works if data has been previously scaled.
         """
-        scl_cols    = self.features
-        index       = iter(np.arange(len(scl_cols)))
-
-        fig = plt.figure(figsize=[30,10])
+        index  = iter(np.arange(len(self.features)))
+        figure = plt.figure(figsize=[30,10])
         
-        for scl_col in scl_cols:
-            index_i = next(index)
-            ax              = plt.subplot(2,len(scl_cols), 1 + index_i)
+        for scl_col in self.features:
+            index_i         = next(index)
+            ax              = plt.subplot(2,len(self.features), 1 + index_i)
             bin_h, bin_b, _ = hist(self.data_tb[scl_col], hist_blocks, color = color_hist, edgecolor = edgecolor)
             plt.title(scl_col, fontsize = fontsize)
             plt.xticks(fontsize = fontsize)
             plt.yticks(fontsize = fontsize)
 
-            ax              = plt.subplot(2, len(scl_cols),1 + len(scl_cols) + index_i)
+            ax              = plt.subplot(2, len(self.features),1 + len(self.features) + index_i)
             bin_h, bin_b, _ = hist(self.data_scl[:,index_i], hist_blocks, color = color_hist, edgecolor = edgecolor)
             plt.xticks(fontsize = fontsize)
             plt.yticks(fontsize = fontsize)
 
         plt.show()
-        if file_name:
-            fig.savefig(file_name, bbox_inches = 'tight', overwrite = True)
-            text = f'PDF saved as: {file_name}' 
-            print('=' * (len(text)))
-            print(text)
-            print('=' * (len(text)))
+        if save_fig:
+            self.save_fig(figure, fig_nm = f'{self.label}_scl_{self.scaler}.pdf')
 
 
-    def plot_clusters(self, alpha_main = 0.5, figsize = [30,9], markersize = 10, fontsize = 24,
-        ylim_3 = None, fig_nm = None,  hist_blocks = 'knuth'):
+    def plot_clusters(self, alpha_main = 1.0, figsize = [30,9], markersize = 10, fontsize = 24, 
+           ylim_3 = None, save_fig = True,  hist_blocks = 'knuth', mew = 1):
         """
         Plot clusters found by HDBSCAN
         """
-        if self.clusters_n == 0:
-            raise ValueError('There are no clusters to be plotted')
+        # Create labels ===================================
+        self.labels = [f'Cluster {i}' for i in range(len(self.clusters))]
 
-        # Load data to Plotter Class ======================
-        figs_data  = Plotters()
-        figs_data.load_gaia_obj(self.gaia_obj)
-        figs_cls   = []
-        llabels    = iter([f'Cluster {i}' for i in range(self.clusters_n)])
-        colors     = iter(self.colors)
+         # Clusters >> Utils objects =======
+        cl_list   = []
+        figs_list = []
+        for i in range(len(self.clusters)):
+            cl_inp = Utils(color = self.colors[i], label = self.labels[i])
+            cl_inp.read_catalogue(self.clusters[i], verbose = False)
+            cl_list.append(cl_inp)
 
-        if self.clusters:
-            for inp in self.clusters:
-                cl_inp = Utils(color = next(colors), label = next(llabels))
-                cl_inp.read_catalogue(inp, verbose = False)
+         # Load first cluster (largest) ====
+        figs_cl0  = Plotters()
+        figs_cl0.load_gaia_obj(cl_list[0])
 
-                fclass  = Plotters()
-                fclass.load_gaia_obj(cl_inp)
-                figs_cls.append(fclass)
+         # Load the rest of the clusters ===
+        for i in range(1,len(self.clusters)):
+            figs   = Plotters()
+            figs.load_gaia_obj(cl_list[i])
+            figs_list.append(figs)
 
         figure   = plt.figure(figsize=figsize)
         plt.subplots_adjust(hspace=0, wspace=0.25)
-
         # ================================================
         plt.subplot(131)
-        figs_data.plot_2d(col_x = 'ra', col_y = 'dec', markersize = markersize, 
-                          alpha = alpha_main, fontsize = fontsize, fig = False)
-
-        for fig in figs_cls:
-            fig.oplot_2d(col_x = 'ra', col_y = 'dec', markersize = markersize, alpha = 1, fontsize = fontsize, legend = True)
-
-
+        figs_cl0.plot_2d(col_x = 'ra', col_y = 'dec', markersize = markersize, 
+                  alpha = alpha_main, fontsize = fontsize, fig = False)
+        for fig in figs_list:
+            fig.oplot_2d(col_x = 'ra', col_y = 'dec', markersize = markersize, alpha = 1, 
+                fontsize = fontsize, legend = True, mew = 1)
         # ================================================
         plt.subplot(132)
-        figs_data.plot_2d(col_x = 'pmra', col_y = 'pmdec', markersize = markersize,
-                          alpha = alpha_main, fontsize = fontsize, fig = False, xlim = self.get_feature_lims('pmra'), 
-                          ylim = self.get_feature_lims('pmdec'), legend = False)
-        for fig in figs_cls:
-            fig.oplot_2d(col_x = 'pmra', col_y = 'pmdec', markersize = markersize, alpha = 1, fontsize = fontsize, legend = False)
-
+        legend = False
+        figs_cl0.plot_2d(col_x = 'pmra', col_y = 'pmdec', markersize = markersize, 
+                  alpha = alpha_main, fontsize = fontsize, fig = False, legend = legend)
+        for fig in figs_list:
+            fig.oplot_2d(col_x = 'pmra', col_y = 'pmdec', markersize = markersize, alpha = 1,
+                fontsize = fontsize, legend = legend, mew = 1)
         # ================================================
         plt.subplot(133)
-        _ = figs_data.plot_hist(inp_col = 'distance', alpha = alpha_main, fontsize = fontsize, fig = False,
-         hist_blocks = hist_blocks, ylim = ylim_3)
-
-        for fig in figs_cls:
+        _ = figs_cl0.plot_hist(inp_col = 'distance', alpha = alpha_main, fontsize = fontsize,
+            fig = False, hist_blocks = hist_blocks, ylim = ylim_3)
+        for fig in figs_list:
             _ = fig.plot_hist(inp_col = 'distance', alpha = 1, fontsize = fontsize, fig = False, 
                 hist_blocks = hist_blocks, show_ylabel = '# Objects')
-
         plt.show()
-        if fig_nm:
-            figure.savefig(fig_nm, bbox_inches = 'tight', overwrite = True)
-            print('=' * (len(fig_nm) + 14))
-            print(f'PDF saved as: {fig_nm}')
-            print('=' * (len(fig_nm) + 14))
+
+        if save_fig:
+            fig_nm = f'{self.label}_hdb_minsamp_{self.min_samples}_prob_{self.probability}_mCls_{self.mCls}.pdf'
+            self.save_fig(figure, fig_nm = fig_nm)
 
 
-    def send_to_ESASky(self, pyesasky_widget, **kargs):
-        """
-        Show HDBSCAN clusters in ESASky
-        """
-        # Load data to Plotter Class ======================
-        llabels    = iter([f'Cluster {i}' for i in range(self.clusters_n)])
-        colors     = iter(self.colors)
-        figs_data  = Plotters()
-        i          = -1
-        for cluster in self.clusters:
-            i = i + 1
-            cl_inp = Utils(color = next(colors), label = next(llabels))
-            cl_inp.read_catalogue(cluster, verbose = False)
-            figs_data.load_gaia_obj(cl_inp)
-            figs_data.send_to_ESASky(pyesasky_widget, background = 'WISE', **kargs)
-
-
-    def plot_multi_hdbscan_stats(self, figsize = [15,7], fontsize = 18, fig_nm = 'default'):
+    def plot_barchart(self, figsize = [15,7], fontsize = 18, save_fig = True):
         """
         Plot run_multi_hdbscan results using a bar-chart diagram.
         """
         # Create np.array for plot ===========
-        x_dim         = np.max([len(inp) for inp in self.clusters_multi_r]) #Extra col contains mCls
+        x_dim         = np.max([len(inp) for inp in self.clusters_multi_r])
         y_dim         = len(self.clusters_multi)
         clusters_info = np.zeros([y_dim, x_dim])
 
@@ -408,7 +374,7 @@ class LibCluster():
 
 
         # Create Plot ========================
-        fig      = plt.figure(figsize = figsize)
+        figure   = plt.figure(figsize = figsize)
         bottoms  = [0]
         for xx in range(1,x_dim-1):
             bottoms.append(bottoms[xx-1] + clusters_info[:,xx])
@@ -425,14 +391,23 @@ class LibCluster():
         plt.ylim(ylim)
         plt.show()
 
+        if save_fig:
+            fig_nm = f'{self.label}_hdb_minsamp_{self.min_samples}_prob_{self.probability}_barchart.pdf'
+            self.save_fig(figure, fig_nm = fig_nm)
 
-        # Export plot to .PDF and save it ====
-        if fig_nm == 'default':
-            fig_nm = f'{self.label}_hdb_minsamp_{self.min_samples}_prob_{self.probability}.pdf'
-        else:
-        	fig_nm = fig_nm
 
-        fig.savefig(fig_nm, bbox_inches = 'tight', overwrite = True)
-        print('=' * (len(fig_nm) + 14))
-        print(f'PDF saved as: {fig_nm}')
-        print('=' * (len(fig_nm) + 14))
+    def send_to_ESASky(self, pyesasky_widget, **kargs):
+        """
+        Show HDBSCAN clusters in ESASky
+        """
+        # Load data to Plotter Class ======================
+        llabels    = iter([f'Cluster {i}' for i in range(self.clusters_n)])
+        colors     = iter(self.colors)
+        figs_data  = Plotters()
+        i          = -1
+        for cluster in self.clusters:
+            i = i + 1
+            cl_inp = Utils(color = next(colors), label = next(llabels))
+            cl_inp.read_catalogue(cluster, verbose = False)
+            figs_data.load_gaia_obj(cl_inp)
+            figs_data.send_to_ESASky(pyesasky_widget, background = 'WISE', **kargs)            

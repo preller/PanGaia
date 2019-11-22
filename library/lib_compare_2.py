@@ -26,6 +26,16 @@ class LibCompare():
         return f'Class to create compare HDBSCAN output VS control sample'
 
 
+    def save_fig(self, figure, fig_nm = 'dummy.pdf', comment_len = 14, text = 'PDF saved as: '):
+        """
+        Save pdf & print info on screen - Copy of lib_cluster.save_fig()
+        """
+        figure.savefig(fig_nm, bbox_inches = 'tight', overwrite = True)
+        print('=' * (len(fig_nm) + comment_len))
+        print(f'{text}{fig_nm}')
+        print('=' * (len(fig_nm) + comment_len))
+
+
     def read_control(self, control_obj, verbose = True, mew = 2):
         """
         Read Control Sample from control object
@@ -110,7 +120,7 @@ class LibCompare():
         """
         Plot clusters found by HDBSCAN - similar to library_cluster.plot_clusters()
         """
-        # Load data to Plotter Class ======================
+        # Create labels ===================================
         self.labels = [f'Cluster {i}' for i in range(len(self.clusters))]
 
 
@@ -135,9 +145,6 @@ class LibCompare():
          # Load control sample =============
         figs_ctl  = Plotters()
         figs_ctl.load_gaia_obj(self.control)
-
-         # Merge together ==================
-        # figs_cls = figs_cls + [figs_ctl]
 
 
         figure   = plt.figure(figsize=figsize)
@@ -175,8 +182,5 @@ class LibCompare():
 
         plt.show()
         if save_fig:
-            fig_nm = f'{self.label}_hdb_minsamp_{self.min_samples}_prob_{self.probability}_.pdf'
-            figure.savefig(fig_nm, bbox_inches = 'tight', overwrite = True)
-            print('=' * (len(fig_nm) + 14))
-            print(f'PDF saved as: {fig_nm}')
-            print('=' * (len(fig_nm) + 14))
+            fig_nm = f'{self.label}_hdb_minsamp_{self.min_samples}_prob_{self.probability}_mCls_{self.mCls}_comp.pdf'
+            self.save_fig(figure, fig_nm = fig_nm)
