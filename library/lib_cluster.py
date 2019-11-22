@@ -193,7 +193,7 @@ class LibCluster():
         self.clusters_extract(self.data_tb_hdb, verbose = verbose)
 
         if plot_clusters:
-            self.plot_hdbscan_clusters(**kargs)
+            self.plot_clusters(**kargs)
 
 
     def clusters_extract(self, inp_tab, verbose = True):
@@ -312,6 +312,9 @@ class LibCluster():
         """
         Plot clusters found by HDBSCAN
         """
+        if self.clusters_n == 0:
+            raise ValueError('There are no clusters to be plotted')
+
         # Load data to Plotter Class ======================
         figs_data  = Plotters()
         figs_data.load_gaia_obj(self.gaia_obj)
@@ -324,39 +327,37 @@ class LibCluster():
                 cl_inp = Utils(color = next(colors), label = next(llabels))
                 cl_inp.read_catalogue(inp, verbose = False)
 
-                fclass       = Plotters()
+                fclass  = Plotters()
                 fclass.load_gaia_obj(cl_inp)
                 figs_cls.append(fclass)
 
-        # ================================================
         figure   = plt.figure(figsize=figsize)
         plt.subplots_adjust(hspace=0, wspace=0.25)
+
+        # ================================================
         plt.subplot(131)
-        col_x, col_y  = 'ra', 'dec'
-        figs_data.plot_2d(col_x = col_x, col_y = col_y, markersize = markersize, 
+        figs_data.plot_2d(col_x = 'ra', col_y = 'dec', markersize = markersize, 
                           alpha = alpha_main, fontsize = fontsize, fig = False)
 
         for fig in figs_cls:
-            fig.plot_2d(col_x = col_x, col_y = col_y, markersize = markersize, alpha = 1, fig = False, fontsize = fontsize)
+            fig.oplot_2d(col_x = 'ra', col_y = 'dec', markersize = markersize, alpha = 1, fontsize = fontsize, legend = True)
 
 
         # ================================================
         plt.subplot(132)
-        col_x, col_y  = 'pmra', 'pmdec'
-        figs_data.plot_2d(col_x = col_x, col_y = col_y, markersize = markersize,
-                          alpha = alpha_main, fontsize = fontsize, fig = False, xlim = self.get_feature_lims(col_x), 
-                          ylim = self.get_feature_lims(col_y), label = None)
+        figs_data.plot_2d(col_x = 'pmra', col_y = 'pmdec', markersize = markersize,
+                          alpha = alpha_main, fontsize = fontsize, fig = False, xlim = self.get_feature_lims('pmra'), 
+                          ylim = self.get_feature_lims('pmdec'), legend = False)
         for fig in figs_cls:
-            fig.plot_2d(col_x = col_x, col_y = col_y, markersize = markersize, alpha = 1, fig = False, fontsize = fontsize, label = None)
+            fig.oplot_2d(col_x = 'pmra', col_y = 'pmdec', markersize = markersize, alpha = 1, fontsize = fontsize, legend = False)
 
         # ================================================
         plt.subplot(133)
-        inp_col = 'distance'
-        _ = figs_data.plot_hist(inp_col = inp_col, alpha = alpha_main, fontsize = fontsize, fig = False,
+        _ = figs_data.plot_hist(inp_col = 'distance', alpha = alpha_main, fontsize = fontsize, fig = False,
          hist_blocks = hist_blocks, ylim = ylim_3)
 
         for fig in figs_cls:
-            _ = fig.plot_hist(inp_col = inp_col, alpha = 1, fontsize = fontsize, fig = False, 
+            _ = fig.plot_hist(inp_col = 'distance', alpha = 1, fontsize = fontsize, fig = False, 
                 hist_blocks = hist_blocks, show_ylabel = '# Objects')
 
         plt.show()
@@ -425,7 +426,7 @@ class LibCluster():
         plt.show()
 
 
-        # Export plot to .PDF and save it
+        # Export plot to .PDF and save it ====
         if fig_nm == 'default':
             fig_nm = f'{self.label}_hdb_minsamp_{self.min_samples}_prob_{self.probability}.pdf'
         else:

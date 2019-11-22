@@ -18,7 +18,7 @@ class LibCompare():
     Initialize the class.
     """
     def __init__(self):
-        pass
+        self.colors  = plt.rcParams['axes.prop_cycle'].by_key()['color'] # Colors asigned to HDBSCAN Clusters
 
 
     def __repr__(self):
@@ -76,8 +76,7 @@ class LibCompare():
             self.clusters[j]['Control'] = cluster['Control']
 
             if verbose:
-                print(f'Cluster {j} contains {len(cluster):>5.0F} Elements, \
-                    including {len(subs)} ({control_pc:4.1F}%) of the Control Sample')
+                print(f'Cluster {j} contains {len(cluster):>5.0F} Elements, including {len(subs)} ({control_pc:4.1F}%) of the Control Sample')
 
 
     def get_new_from_cl(self, cl_index = None, write_simbad_query = True, verbose = True):
@@ -110,14 +109,14 @@ class LibCompare():
             xlim_1 = None, ylim_1 = None, xlim_2 = None, ylim_2 = None, ylim_3 = None,
             fig_nm = None,  hist_blocks = 'knuth', mew = 1):
         """
-        Plot clusters found by HDBSCAN - similar to library_cluster.plot_hdbscan_clusters()
+        Plot clusters found by HDBSCAN - similar to library_cluster.plot_clusters()
         """
         # Load data to Plotter Class ======================
-        figs_data  = Plotters()
-        figs_data.load_gaia_cat(self.clusters[0]) # Load first the largest cluster (first on the list)
-        color_def  = plt.rcParams['axes.prop_cycle'].by_key()['color']
-        figs_cls   = []
         llabels    = iter([f'Cluster {i+1}' for i in range(len(self.clusters))])
+        figs_data  = Plotters()
+        figs_data.load_gaia_obj(self.clusters[0]) # Load first the largest cluster (first on the list)
+        # color_def  = plt.rcParams['axes.prop_cycle'].by_key()['color']
+        figs_cls   = []
         color_0    = color_def[0]
         colors     = cycle(color_def[1:]) # Default MatPlotlub colors
         control_sf = 0.6

@@ -59,7 +59,7 @@ class LibPlotters():
 
 
 	def plot_2d(self, col_x = 'pmra', col_y = 'pmdec', fontsize = 18, fig = True, xlim = None, ylim = None, markersize = 2, 
-	alpha = 0.75, label = True, grid = True, fig_nm = None, mew = 1, markeredgecolor = 'black', figsize = [7,7], show_av_err = False):
+	alpha = 0.75, legend = True, grid = True, fig_nm = None, mew = 1, markeredgecolor = 'black', figsize = [7,7], show_av_err = False):
 		"""
 		Shows 2D plot. The plot is automatically centred in the average XY values.
 		"""
@@ -91,7 +91,8 @@ class LibPlotters():
 			y_e  = ylims[1] - ylims_rg/10
 			ax.errorbar(x_e, y_e, xerr=xerr, yerr=yerr, fmt='o', color = 'black', markersize = markersize*0.1, capthick=2, capsize = markersize*0.2)
 
-		if label: plt.legend(loc = 'upper right', fontsize = fontsize * 0.8)
+		if legend: 
+			plt.legend(loc = 'upper right', fontsize = fontsize * 0.8)
 		if grid: plt.grid()		
 		if fig: plt.show()
 		if fig and fig_nm:
@@ -101,15 +102,15 @@ class LibPlotters():
 			print('=' * (len(fig_nm) + 14))
 
 
-	def oplot_2d(self, col_x = 'pmra', col_y = 'pmdec', markersize = 2, color = 'grey', alpha = 0.75, label = None, mew = 0, 
-		markeredgecolor = 'black', fontsize = 18):
+	def oplot_2d(self, col_x = 'pmra', col_y = 'pmdec', markersize = 2, alpha = 0.75, mew = 0, markeredgecolor = 'black', fontsize = 18, legend = False):
 		"""
 		OVERplot 2D plot
 		"""
-		plt.plot(self.cat[col_x], self.cat[col_y], 'o', markersize = markersize, mew = mew, markeredgecolor = markeredgecolor, color = color,
-			alpha = alpha, label = label)
-		if label: 
+		plt.plot(self.cat[col_x], self.cat[col_y], 'o', label = self.label, color = self.color, markersize = markersize, 
+			mew = mew, markeredgecolor = markeredgecolor, alpha = alpha)
+		if legend: 
 			plt.legend(loc = 'upper right', fontsize = fontsize * 0.8)
+
 
 
 	def plot_2d_and_hist(self, col_x = 'pmra', col_y = 'pmdec', col_hist = 'parallax', fontsize = 26, 
