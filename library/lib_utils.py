@@ -211,14 +211,14 @@ class LibUtils():
         """
         Computes average R.A./Dec coords, parallax range, and projected-sky size
         """
-        ra             = self.cat['ra'].mean()  * self.cat['ra'].unit
-        dec            = self.cat['dec'].mean() * self.cat['dec'].unit
-        delta_ra       = np.abs(self.cat['ra'].max()  - self.cat['ra'].min())
-        delta_dec      = np.abs(self.cat['dec'].max() - self.cat['dec'].min())
-        radius         = np.max([delta_ra, delta_dec]) * 0.5  * self.cat['dec'].unit
-        para_min       = np.floor(self.cat['parallax'].min()*100)/100. * self.cat['parallax'].unit
-        para_max       = np.ceil(self.cat['parallax'].max()*100)/100.  * self.cat['parallax'].unit
-        self.ADQL_pars = {'ra':ra, 'dec':dec, 'radius':radius, 'para_min':para_min, 'para_max':para_max}
+        ra         = self.cat['ra'].mean()  * self.cat['ra'].unit
+        dec        = self.cat['dec'].mean() * self.cat['dec'].unit
+        delta_ra   = np.abs(self.cat['ra'].max()  - self.cat['ra'].min())
+        delta_dec  = np.abs(self.cat['dec'].max() - self.cat['dec'].min())
+        radii      = np.max([delta_ra, delta_dec]) * 0.5  * self.cat['dec'].unit
+        para_m     = np.floor(self.cat['parallax'].min()*100)/100. * self.cat['parallax'].unit
+        para_M     = np.ceil(self.cat['parallax'].max()*100)/100.  * self.cat['parallax'].unit
+        self.ADQL  = {'ra':ra, 'dec':dec, 'radii':radii, 'para_m':para_m, 'para_M':para_M}
         if verbose:
             print('sample properties saved for ADQL Cone-Search')
 
@@ -227,12 +227,12 @@ class LibUtils():
         """
         Prints Sky-Properties of the Sample to prepare a Gaia Cone Search
         """
-        if hasattr(self, 'ADQL_pars'):
+        if hasattr(self, 'ADQL'):
             formatter = iter(['13.2F', '13.2F', '12.2F', '13.2F', '13.2F'])
             text      = iter(['Average R.A.', 'Average Dec.', 'Radius on-sky', 'Parallax min', 'Parallax max'])
             print(f'{self.label} on-Sky sample properties:')
-            for key in self.ADQL_pars:
-                print(f'* {next(text)} {self.ADQL_pars[key].value : {next(formatter)}}, {self.ADQL_pars[key].unit}')
+            for key in self.ADQL:
+                print(f'* {next(text)} {self.ADQL[key].value : {next(formatter)}}, {self.ADQL[key].unit}')
         else:
             print('Sample has no ADQL parameters. Please run .to_cone_search()')
 

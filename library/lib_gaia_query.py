@@ -60,7 +60,7 @@ class LibGaiaQuery():
         return f'Class to create the Gaia/Analysis sample'
 
 
-    def set_cone_search_pars(self, sample_name = None, ra = None, dec = None, radius = None, para_min = None, para_max = None):
+    def set_cone_search_pars(self, sample_name = None, ra = None, dec = None, radii = None, para_m = None, para_M = None):
         """
         Prepare cone search parameters.
         """
@@ -68,12 +68,12 @@ class LibGaiaQuery():
         if not sample_name: sample_name = input('Introduce sample name (e.g. IC_348_test): ')
         if not ra:          ra          = read_float_input(text_0 + 'R.A.   [decimal degree]: ')
         if not dec:         dec         = read_float_input(text_0 + 'Dec    [decimal degree]: ')
-        if not radius:      radius      = read_float_input(text_0 + 'radius [decimal degree]: ')
-        if not para_min:    para_min    = read_float_input(text_0 + 'min-Parallax [mas]: ')
-        if not para_max:    para_max    = read_float_input(text_0 + 'max-Parallax [mas]: ')
+        if not radii:       radii       = read_float_input(text_0 + 'radius [decimal degree]: ')
+        if not para_m:      para_m      = read_float_input(text_0 + 'min-Parallax [mas]: ')
+        if not para_M:      para_M      = read_float_input(text_0 + 'max-Parallax [mas]: ')
         print()
         self.sample_name = sample_name
-        self.ADQL_pars   = {'ra':ra, 'dec':dec, 'radius':radius, 'para_min':para_min, 'para_max':para_max}
+        self.ADQL   = {'ra':ra, 'dec':dec, 'radii':radii, 'para_m':para_m, 'para_M':para_M}
 
 
     def run_cone_search(self, quality_par_SN  = '10', quality_par_vis = '7',quality_par_ruwe = '1.40', verbose = True):
@@ -88,8 +88,8 @@ class LibGaiaQuery():
                 "LEFT OUTER JOIN gaiadr2.ruwe  AS g_ruwe ON gaia.source_id = g_ruwe.source_id "
                 "WHERE 1=CONTAINS( "
                 "POINT('ICRS',ra,dec), "
-                f"CIRCLE('ICRS',{self.ADQL_pars['ra']:5.2F}, {self.ADQL_pars['dec']:5.2F}, {self.ADQL_pars['radius']:5.2F})) "
-                f"AND parallax >= {self.ADQL_pars['para_min']:5.2F} AND parallax <= {self.ADQL_pars['para_max']:5.2F} "
+                f"CIRCLE('ICRS',{self.ADQL['ra']:5.2F}, {self.ADQL['dec']:5.2F}, {self.ADQL['radii']:5.2F})) "
+                f"AND parallax >= {self.ADQL['para_m']:5.2F} AND parallax <= {self.ADQL['para_M']:5.2F} "
                 f"AND gaia.source_id IS NOT NULL AND gaia.parallax/gaia.parallax_error >{quality_par_SN} "
                 f"AND gaia.visibility_periods_used >{quality_par_vis} AND g_ruwe.ruwe <{quality_par_ruwe}")
         # 2.- Run ADQL query ===================================
