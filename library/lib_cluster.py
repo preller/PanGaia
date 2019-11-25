@@ -9,7 +9,7 @@ import hdbscan
 import numpy as np
 import matplotlib.pyplot as plt
 from astropy.visualization    import hist
-from astropy.table            import Table
+from astropy.table            import Table, join
 from sklearn                  import preprocessing
 from lib_plotters             import LibPlotters as Plotters
 from lib_utils                import LibUtils    as Utils
@@ -69,6 +69,17 @@ class LibCluster():
         for cluster in self.clusters:
             i         = i + 1
             self.save_tb(cluster, tb_nm = root_name + f'_cl_{i}.vot', text = 'HDBSCAN Cluster data saved as: ')
+
+
+    def load_control_obj(self, control_obj):
+        """
+        Load Control object (only used for comparison)
+        """
+        if isinstance(control_obj, Utils):
+            self.control                = control_obj
+            self.control.cat['Control'] = ['Y'] * len(self.control.cat) # Useful for comparison to HDBSCAn clusters.
+        else:
+            raise Exception('Input object is not a LibUtils instance')
 
 
     def load_gaia_obj(self, gaia_obj, scl_features = ['X_gal', 'Y_gal', 'Z_gal', 'pmdec', 'pmra'],
@@ -266,7 +277,27 @@ class LibCluster():
             self.plot_barchart(**kargs)
 
 
-# Plotters ================================================================================================
+    def compare_to_control(self, verbose = True):
+        """
+        Compare HDBSCAN clusters to Control Sample.
+        """
+        print()
+        j = -1
+        for cluster in self.clusters:
+            j    = j +1 
+            temp = join(cluster, self.control.cat['source_id', 'Control'], keys = 'source_id', join_type = 'left')
+            temp['Control'][temp['Control'].mask == True] = 'N'
+            self.clusters[j]['Control'] = temp['Control']
+
+            if verbose:
+                subs       = temp[temp['Control'] == 'Y']
+                control_pc = (len(subs)/len(self.control.cat) * 100)
+                print(f'Cluster {j} contains {len(cluster):>5.0F} Elements, including {len(subs)} ({control_pc:4.1F}%) of the Control Sample')
+
+
+# =========================================================================================================
+# Dedicated Plotters ======================================================================================
+# =========================================================================================================
     def plot_distributions(self, hist_blocks = 'knuth', color_hist  = 'lightgrey', edgecolor = 'black',
         fontsize = 16, save_fig = True):
         """
@@ -320,6 +351,13 @@ class LibCluster():
             figs.load_gaia_obj(cl_list[i])
             figs_list.append(figs)
 
+         # Load control sample =============
+        try:
+            figs_ctl  = Plotters()
+            figs_ctl.load_gaia_obj(self.control)
+        except AttributeError:
+            pass
+
         figure   = plt.figure(figsize=figsize)
         plt.subplots_adjust(hspace=0, wspace=0.25)
         # ================================================
@@ -329,14 +367,25 @@ class LibCluster():
         for fig in figs_list:
             fig.oplot_2d(col_x = 'ra', col_y = 'dec', markersize = markersize, alpha = 1, 
                 fontsize = fontsize, legend = True, mew = 1)
+        try:
+            figs_ctl.oplot_2d(col_x = 'ra', col_y = 'dec', markersize = markersize * 0.6, alpha = 1, 
+                fontsize = fontsize, legend = True, mew = 1)
+        except AttributeError:
+            pass
+
         # ================================================
         plt.subplot(132)
-        legend = False
         figs_cl0.plot_2d(col_x = 'pmra', col_y = 'pmdec', markersize = markersize, 
-                  alpha = alpha_main, fontsize = fontsize, fig = False, legend = legend)
+                  alpha = alpha_main, fontsize = fontsize, fig = False, legend = False)
         for fig in figs_list:
             fig.oplot_2d(col_x = 'pmra', col_y = 'pmdec', markersize = markersize, alpha = 1,
-                fontsize = fontsize, legend = legend, mew = 1)
+                fontsize = fontsize, legend = False, mew = 1)
+        try:
+            figs_ctl.oplot_2d(col_x = 'pmra', col_y = 'pmdec', markersize = markersize * 0.6, alpha = 1, 
+                fontsize = fontsize, legend = False, mew = 1)
+        except AttributeError:
+            pass
+
         # ================================================
         plt.subplot(133)
         _ = figs_cl0.plot_hist(inp_col = 'distance', alpha = alpha_main, fontsize = fontsize,
@@ -344,6 +393,11 @@ class LibCluster():
         for fig in figs_list:
             _ = fig.plot_hist(inp_col = 'distance', alpha = 1, fontsize = fontsize, fig = False, 
                 hist_blocks = hist_blocks, show_ylabel = '# Objects')
+        try:
+            _ = figs_ctl.plot_hist(inp_col = 'distance', alpha = 1, fontsize = fontsize, fig = False,
+                hist_blocks = hist_blocks, fill = False, hatch='//', linewidth=2)
+        except AttributeError:
+            pass
         plt.show()
 
         if save_fig:
