@@ -76,7 +76,7 @@ class LibGaiaQuery():
         self.ADQL   = {'ra':ra, 'dec':dec, 'radii':radii, 'para_m':para_m, 'para_M':para_M}
 
 
-    def run_cone_search(self, quality_par_SN  = '10', quality_par_vis = '7',quality_par_ruwe = '1.40', verbose = True):
+    def run_cone_search(self, qpar_SN  = 10, qpar_vis = 7,qpar_ruwe = 1.40, verbose = True):
         """
         Run a Cone Search ADQL query on the Gaia DR2 archive. By default the code applies a selection criteria: objets with
         parallax S/N <10, visibility periods used < 7, and RUWE >1.40 are excluded.
@@ -90,8 +90,8 @@ class LibGaiaQuery():
                 "POINT('ICRS',ra,dec), "
                 f"CIRCLE('ICRS',{self.ADQL['ra']:5.2F}, {self.ADQL['dec']:5.2F}, {self.ADQL['radii']:5.2F})) "
                 f"AND parallax >= {self.ADQL['para_m']:5.2F} AND parallax <= {self.ADQL['para_M']:5.2F} "
-                f"AND gaia.source_id IS NOT NULL AND gaia.parallax/gaia.parallax_error >{quality_par_SN} "
-                f"AND gaia.visibility_periods_used >{quality_par_vis} AND g_ruwe.ruwe <{quality_par_ruwe}")
+                f"AND gaia.source_id IS NOT NULL AND gaia.parallax/gaia.parallax_error >{qpar_SN} "
+                f"AND gaia.visibility_periods_used >{qpar_vis} AND g_ruwe.ruwe <{qpar_ruwe}")
         # 2.- Run ADQL query ===================================
         warnings.simplefilter('ignore', category=AstropyWarning)
         print(f'RUNNING ADQL ASYNCRHRONOUS QUERY ' + '=' * 57)
@@ -99,15 +99,21 @@ class LibGaiaQuery():
         self.cat  = job.get_results()
 
         flag_psn, flag_vis, flag_ruwe  = '', '', ''
-        if quality_par_SN == '10':     flag_psn  = '(Default)'
-        if quality_par_vis == '7':     flag_vis  = '(Default)'
-        if quality_par_ruwe == '1.40': flag_ruwe = '(Default)'        
+        if qpar_SN == 10:     flag_psn  = '(Default)'
+        if qpar_vis == 7:     flag_vis  = '(Default)'
+        if qpar_ruwe == 1.40: flag_ruwe = '(Default)'        
+
+        if qpar_SN < 10:
+            text = 'WARNING: Parallax->Distance conversion as d = 1/parallax is not realiable if parallax S/N < 10' 
+            print('!' * len(text))
+            print(text)
+            print('!' * len(text))
 
         if verbose:
             print('=' * 90)
-            print(f'Selection Criteria in Parallax S/N:             Parallax S/N > {quality_par_SN}   {flag_psn}')
-            print(f'Selection Criteria in Visibility Periods Used:  Vis          > {quality_par_vis}    {flag_vis}')
-            print(f'Selection Criteria in RUWE:                     RUWE         < {quality_par_ruwe} {flag_ruwe}')
+            print(f'Selection Criteria in Parallax S/N:             Parallax S/N > {qpar_SN}   {flag_psn}')
+            print(f'Selection Criteria in Visibility Periods Used:  Vis          > {qpar_vis}    {flag_vis}')
+            print(f'Selection Criteria in RUWE:                     RUWE         < {qpar_ruwe} {flag_ruwe}')
             print()            
             print(f'SAMPLE OUTPUT  N_els = {len(self.cat):3.0f}')
             print('=' * 90)
@@ -152,7 +158,7 @@ class LibGaiaQuery():
 
 
     def run_gaia2mass_cross_match(self, upload_table = 'dummy.vot', verbose = True, add_input_cols = "", 
-        quality_par_SN  = '10', quality_par_vis = '7',quality_par_ruwe = '1.40'):
+        qpar_SN  = 10, qpar_vis = 7, qpar_ruwe = 1.40):
         """
         Run a crossmatch between Gaia, 2MASS
         """
@@ -173,7 +179,7 @@ class LibGaiaQuery():
                   "LEFT OUTER JOIN gaiadr2.tmass_best_neighbour AS xmatch ON input_table.col2mass = xmatch.original_ext_source_id "
                   "LEFT OUTER JOIN gaiadr2.gaia_source          AS gaia   ON xmatch.source_id     = gaia.source_id "
                   "LEFT OUTER JOIN gaiadr2.ruwe                 AS g_ruwe ON gaia.source_id       = g_ruwe.source_id "
-                  f"WHERE gaia.parallax/gaia.parallax_error >{quality_par_SN} AND gaia.visibility_periods_used >{quality_par_vis} AND g_ruwe.ruwe <{quality_par_ruwe}")
+                  f"WHERE gaia.parallax/gaia.parallax_error >{qpar_SN} AND gaia.visibility_periods_used >{qpar_vis} AND g_ruwe.ruwe <{qpar_ruwe}")
 
 
         # 3.- Run ADQL query ===================================
@@ -183,15 +189,15 @@ class LibGaiaQuery():
         self.cat  = job.get_results()
 
         flag_psn, flag_vis, flag_ruwe  = '', '', ''
-        if quality_par_SN == '10':     flag_psn  = '(Default)'
-        if quality_par_vis == '7':     flag_vis  = '(Default)'
-        if quality_par_ruwe == '1.40': flag_ruwe = '(Default)'        
+        if qpar_SN == 10:     flag_psn  = '(Default)'
+        if qpar_vis == 7:     flag_vis  = '(Default)'
+        if qpar_ruwe == 1.40: flag_ruwe = '(Default)'        
 
         if verbose:
             print('=' * 90)
-            print(f'Selection Criteria in Parallax S/N:             Parallax S/N > {quality_par_SN}   {flag_psn}')
-            print(f'Selection Criteria in Visibility Periods Used:  Vis          > {quality_par_vis}    {flag_vis}')
-            print(f'Selection Criteria in RUWE:                     RUWE         < {quality_par_ruwe} {flag_ruwe}')
+            print(f'Selection Criteria in Parallax S/N:             Parallax S/N > {qpar_SN}   {flag_psn}')
+            print(f'Selection Criteria in Visibility Periods Used:  Vis          > {qpar_vis}    {flag_vis}')
+            print(f'Selection Criteria in RUWE:                     RUWE         < {qpar_ruwe} {flag_ruwe}')
             print()            
             print(f'SAMPLE OUTPUT  N_els = {len(self.cat):3.0f}')
             print('=' * 63)                             
