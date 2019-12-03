@@ -12,7 +12,7 @@ from astropy.table            import Table, MaskedColumn
 from astropy.utils.exceptions import AstropyWarning
 
 
-class LibUtils():
+class Utils():
     """
     Initialize the class.
     """

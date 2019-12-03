@@ -15,12 +15,12 @@ from astropy.coordinates import SkyCoord
 from astropy.table       import Table
 from pyesasky.catalogue  import Catalogue
 from pyesasky.cooFrame   import CooFrame
-from lib_utils           import LibUtils  as Utils
+from utils           import Utils  as Utils
 
 # ========================================================================================
 # Gaia DR2 Plotters
 # ========================================================================================
-class LibPlotters():
+class Plotters():
 	"""
 	Initialize the class.
 	"""

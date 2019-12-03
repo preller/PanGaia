@@ -13,7 +13,7 @@ import copy, webcolors
 import plotly.graph_objs as go
 from plotly.graph_objs        import FigureWidget
 from ipywidgets               import HBox, VBox, Button
-from lib_utils                import LibUtils    as Utils
+from utils                import Utils    as Utils
 from astropy.table            import Table
 
 # Extra Methods ================================
@@ -30,7 +30,7 @@ def color_nm_to_rgba(color = 'black', alpha = 0.5):
 
 
 
-class LibInteractive():
+class i_Plot():
     """
     Initialize the class.
     """

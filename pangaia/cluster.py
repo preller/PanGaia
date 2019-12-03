@@ -11,8 +11,8 @@ import matplotlib.pyplot as plt
 from astropy.visualization    import hist
 from astropy.table            import Table, join
 from sklearn                  import preprocessing
-from lib_plotters             import LibPlotters as Plotters
-from lib_utils                import LibUtils    as Utils
+from plotters             import Plotters as Plotters
+from utils                import Utils    as Utils
 
 # Extra Methods ================================
 def read_float_input(text = 'Introduce Input: '):
@@ -26,7 +26,7 @@ def read_float_input(text = 'Introduce Input: '):
     return read_val
 
 
-class LibCluster():
+class Cluster():
     """
     Initialize the class.
     """
